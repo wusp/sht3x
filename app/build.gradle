@@ -1,0 +1,72 @@
+apply plugin: 'com.android.application'
+apply plugin: 'android-apt'
+
+// Create a variable called keystorePropertiesFile, and initialize it to your
+// keystore.properties file, in the rootProject folder.
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+
+// Initialize a new Properties() object called keystoreProperties.
+def keystoreProperties = new Properties()
+
+// Load your keystore.properties file into the keystoreProperties object.
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
+android {
+    compileSdkVersion 17
+    buildToolsVersion "25.0.2"
+    defaultConfig {
+        multiDexEnabled true
+        applicationId "com.maxtropy.bright.monitor"
+        minSdkVersion 17
+        targetSdkVersion 17
+        versionCode gitVersionNumber(project)
+        versionName gitVersionName(project)
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    signingConfigs {
+        release {
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
+    }
+    applicationVariants.all { variant ->
+        String fileName = "${rootProject.name}-${versionName}-${variant.buildType.name}"
+        variant.outputs[0].packageApplication.outputFile = new File(variant.outputs[0].packageApplication.outputFile.parent, fileName + "-unaligned.apk")
+        variant.outputs[0].outputFile = new File(variant.outputs[0].packageApplication.outputFile.parent, fileName + ".apk")
+    }
+    lintOptions {
+        abortOnError false
+    }
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile files('libs/purejavacomm-seg_0.0.23.jar')
+    compile 'net.java.dev.jna:jna-platform:4.2.2'
+    testCompile 'junit:junit:4.12'
+    provided 'javax.annotation:jsr250-api:1.0'
+    compile 'com.jakewharton:butterknife:8.4.0'
+    apt 'com.jakewharton:butterknife-compiler:8.4.0'
+    compile files('libs/mockingbirds-protocol_2.11-1.0.4.jar')
+    compile files('libs/roc-sdk-origin-protov1.1.1-release-2-g54a3871.jar')
+    compile 'org.scala-lang:scala-library:2.11.6'
+    //Multi dex
+    compile 'com.android.support:multidex:1.0.0'
+    compile 'com.tencent.bugly:crashreport:latest.release'
+}

@@ -1,0 +1,60 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.3.0'
+        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
+        classpath 'org.eclipse.jgit:org.eclipse.jgit:4.1.1.201511131810-r'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
+import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.internal.storage.file.FileRepository
+
+import java.util.regex.Matcher
+
+def gitVersionName(project) {
+    File gitDir = new File(project.rootDir, '.git')
+    if (!gitDir.exists()) {
+        throw new IllegalArgumentException('Cannot find \'.git\' directory')
+    }
+    try {
+        Git git = Git.wrap(new FileRepository(gitDir))
+        String version = git.describe().call() ?: 'unspecified'
+        boolean isClean = git.status().call().isClean()
+        return version + (isClean ? '' : '-SNAPSHOT')
+    } catch (Throwable t) {
+        return 'unspecified'
+    }
+}
+
+def gitVersionNumber(project) {
+    def r = /v(\d+)\.(\d+)\.(\d+)(-.*)?/
+    String versionName = gitVersionName(project)
+    Matcher m = versionName =~ r
+
+    if (m.matches()) {
+        int major = m.group(1).toInteger()
+        int minor = m.group(2).toInteger()
+        int patch = m.group(3).toInteger()
+        return major * 1000000 + minor * 1000 + patch
+    } else {
+        throw new IllegalArgumentException('versionName: ' + versionName + ' cannot be convert to versioncode')
+    }
+}
