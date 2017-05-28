@@ -12,7 +12,7 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.maxtropy.ilaundry.monitor.serial.ModbusCenter;
+import com.maxtropy.ilaundry.monitor.roc.Roc;
 import com.maxtropy.ilaundry.monitor.serial.Utils;
 import com.maxtropy.roc.util.IntentReceiver;
 
@@ -49,7 +49,8 @@ public class ReportService extends Service {
         am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         Intent i = new Intent(this, AlarmReportReceiver.class);
         alarmIntent = PendingIntent.getBroadcast(this, 0, i, 0);
-        am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + Utils.nextUploadTimeGap(), 300 * 1000, alarmIntent);
+        // am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + Utils.nextUploadTimeGap(), 300 * 1000, alarmIntent);
+        am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 1000, alarmIntent);
         return START_STICKY;
     }
 

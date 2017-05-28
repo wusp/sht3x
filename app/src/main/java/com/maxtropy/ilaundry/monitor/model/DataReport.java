@@ -12,7 +12,7 @@ import com.maxtropy.mockingbirds.protocol.MessageConstV2;
 @MessageType(subType = DataReport.SUB_TYPE, type = MessageConstV2.TYPE_REPORT)
 public class DataReport extends AbstractMessageV2 {
     static final int SUB_TYPE = 0x499001;
-    static final String topic = "gm_report_data";
+    static final String topic = "ilaundry_data";
     @MessageKey(1)
     String source;
     @MessageKey(2)

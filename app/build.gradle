@@ -69,4 +69,5 @@ dependencies {
     //Multi dex
     compile 'com.android.support:multidex:1.0.0'
     compile 'com.tencent.bugly:crashreport:latest.release'
+    compile('org.projectlombok:lombok:1.16.10')
 }

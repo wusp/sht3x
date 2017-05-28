@@ -2,6 +2,7 @@ package com.maxtropy.ilaundry.monitor;
 
 import android.support.multidex.MultiDexApplication;
 
+import com.maxtropy.ilaundry.monitor.roc.Roc;
 import com.tencent.bugly.crashreport.CrashReport;
 
 /**

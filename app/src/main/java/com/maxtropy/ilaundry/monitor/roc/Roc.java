@@ -1,4 +1,4 @@
-package com.maxtropy.ilaundry.monitor;
+package com.maxtropy.ilaundry.monitor.roc;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -7,6 +7,9 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.maxtropy.ilaundry.monitor.Const;
+import com.maxtropy.ilaundry.monitor.R;
+import com.maxtropy.ilaundry.monitor.roc.consumer.TestToBoxConsumer;
 import com.maxtropy.mockingbirds.protocol.IMessageV2;
 import com.maxtropy.roc.RocChannel;
 import com.maxtropy.roc.RocMessageReceiver;
@@ -51,6 +54,7 @@ public class Roc {
 
     private void init(Context context) {
         rocMessageReceiver = new RocMessageReceiver();
+        rocMessageReceiver.addConsumer(new TestToBoxConsumer());
         rocBinder = new ServiceBinder(context, rocMessageReceiver);
         appDescriptor = context.getResources().getString(R.string.app_name);
         rocChannel = bindRocService(appDescriptor, ServerId.OTHER, rocBinder);

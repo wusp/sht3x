@@ -11,7 +11,7 @@ import com.maxtropy.ilaundry.monitor.model.HumiTempRequest;
 import com.maxtropy.ilaundry.monitor.model.ModbusRequest;
 import com.maxtropy.ilaundry.monitor.model.ModbusResponse;
 import com.maxtropy.ilaundry.monitor.model.ModbusResponseListener;
-import com.maxtropy.ilaundry.monitor.serial.ModbusCenter;
+import com.maxtropy.ilaundry.monitor.roc.Roc;
 import com.maxtropy.ilaundry.monitor.serial.Utils;
 import com.softwinner.Gpio;
 
@@ -47,8 +47,9 @@ public class AlarmReportReceiver extends BroadcastReceiver {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        */
         preparedToSend();
+        */
+        Roc.getInstance(app).sendMessage(report);
     }
 
     private void preparedToSend() {
