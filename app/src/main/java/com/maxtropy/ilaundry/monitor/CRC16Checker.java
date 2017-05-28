@@ -1,4 +1,4 @@
-package com.maxtropy.bright.monitor;
+package com.maxtropy.ilaundry.monitor;
 
 /**
  * Created by jiaoew on 16/3/3.

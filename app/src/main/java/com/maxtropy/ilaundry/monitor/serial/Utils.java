@@ -1,4 +1,4 @@
-package com.maxtropy.bright.monitor.serial;
+package com.maxtropy.ilaundry.monitor.serial;
 
 import java.nio.ByteBuffer;
 import java.text.DateFormat;

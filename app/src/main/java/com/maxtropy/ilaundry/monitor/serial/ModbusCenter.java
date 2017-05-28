@@ -1,14 +1,14 @@
-package com.maxtropy.bright.monitor.serial;
+package com.maxtropy.ilaundry.monitor.serial;
 
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
 import android.util.Log;
 
-import com.maxtropy.bright.monitor.Const;
-import com.maxtropy.bright.monitor.model.ModbusRequest;
-import com.maxtropy.bright.monitor.model.ModbusResponse;
-import com.maxtropy.bright.monitor.model.ModbusResponseListener;
+import com.maxtropy.ilaundry.monitor.Const;
+import com.maxtropy.ilaundry.monitor.model.ModbusRequest;
+import com.maxtropy.ilaundry.monitor.model.ModbusResponse;
+import com.maxtropy.ilaundry.monitor.model.ModbusResponseListener;
 
 import java.io.IOException;
 import java.util.TooManyListenersException;

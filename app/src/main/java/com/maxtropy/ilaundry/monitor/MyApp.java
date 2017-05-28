@@ -1,4 +1,4 @@
-package com.maxtropy.bright.monitor;
+package com.maxtropy.ilaundry.monitor;
 
 import android.support.multidex.MultiDexApplication;
 

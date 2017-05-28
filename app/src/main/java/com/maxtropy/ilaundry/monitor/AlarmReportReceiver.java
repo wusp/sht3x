@@ -1,18 +1,18 @@
-package com.maxtropy.bright.monitor;
+package com.maxtropy.ilaundry.monitor;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import com.maxtropy.bright.monitor.model.DataReport;
-import com.maxtropy.bright.monitor.model.ElectricityRequest;
-import com.maxtropy.bright.monitor.model.HumiTempRequest;
-import com.maxtropy.bright.monitor.model.ModbusRequest;
-import com.maxtropy.bright.monitor.model.ModbusResponse;
-import com.maxtropy.bright.monitor.model.ModbusResponseListener;
-import com.maxtropy.bright.monitor.serial.ModbusCenter;
-import com.maxtropy.bright.monitor.serial.Utils;
+import com.maxtropy.ilaundry.monitor.model.DataReport;
+import com.maxtropy.ilaundry.monitor.model.ElectricityRequest;
+import com.maxtropy.ilaundry.monitor.model.HumiTempRequest;
+import com.maxtropy.ilaundry.monitor.model.ModbusRequest;
+import com.maxtropy.ilaundry.monitor.model.ModbusResponse;
+import com.maxtropy.ilaundry.monitor.model.ModbusResponseListener;
+import com.maxtropy.ilaundry.monitor.serial.ModbusCenter;
+import com.maxtropy.ilaundry.monitor.serial.Utils;
 import com.softwinner.Gpio;
 
 import java.util.Random;
@@ -34,6 +34,7 @@ public class AlarmReportReceiver extends BroadcastReceiver {
         Log.d(Const.TAG, "Receive intent action on AlarmReportReceiver: " + intent.getAction());
         app = context.getApplicationContext();
         report = new DataReport();   //the new data report.
+        /*
         ModbusCenter.getInstance().sendModbusRequest(new HumiTempRequest(), htListener);
         try {
             Thread.sleep(1200 + ran.nextInt(500));
@@ -46,6 +47,7 @@ public class AlarmReportReceiver extends BroadcastReceiver {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        */
         preparedToSend();
     }
 
@@ -73,7 +75,7 @@ public class AlarmReportReceiver extends BroadcastReceiver {
             //Inform error anyway.
             report.setCompressorWorking(2);
         }
-        ModbusCenter.getInstance().restart();
+        // ModbusCenter.getInstance().restart();
     }
 
     private ModbusResponseListener htListener = new ModbusResponseListener() {

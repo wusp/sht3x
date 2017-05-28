@@ -16,7 +16,7 @@ android {
     buildToolsVersion "25.0.2"
     defaultConfig {
         multiDexEnabled true
-        applicationId "com.maxtropy.bright.monitor"
+        applicationId "com.maxtropy.ilaundry.monitor"
         minSdkVersion 17
         targetSdkVersion 17
         versionCode gitVersionNumber(project)

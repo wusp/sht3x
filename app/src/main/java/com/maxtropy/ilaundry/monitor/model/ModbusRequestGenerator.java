@@ -1,4 +1,4 @@
-package com.maxtropy.bright.monitor.model;
+package com.maxtropy.ilaundry.monitor.model;
 
 /**
  * Created by wusp on 2017/4/29.

@@ -1,10 +1,10 @@
-package com.maxtropy.bright.monitor.serial;
+package com.maxtropy.ilaundry.monitor.serial;
 
 
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.maxtropy.bright.monitor.Const;
+import com.maxtropy.ilaundry.monitor.Const;
 
 import java.util.ArrayList;
 import java.util.List;

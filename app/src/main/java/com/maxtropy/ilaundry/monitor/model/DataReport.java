@@ -1,6 +1,6 @@
-package com.maxtropy.bright.monitor.model;
+package com.maxtropy.ilaundry.monitor.model;
 
-import com.maxtropy.bright.monitor.serial.Utils;
+import com.maxtropy.ilaundry.monitor.serial.Utils;
 import com.maxtropy.mockingbirds.annotation.MessageKey;
 import com.maxtropy.mockingbirds.annotation.MessageType;
 import com.maxtropy.mockingbirds.protocol.AbstractMessageV2;
