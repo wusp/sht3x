@@ -6,19 +6,23 @@ import com.maxtropy.mockingbirds.protocol.AbstractMessageV2;
 import com.maxtropy.mockingbirds.protocol.MessageConstV2;
 
 import lombok.EqualsAndHashCode;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 /**
- * 测试用报文
+ * 带洗衣模式的洗衣请求
  * Created by Yankai.
  */
 @EqualsAndHashCode(callSuper = false)
-@Data
+@Getter
+@Setter
 @ToString
-@MessageType(subType = TestToBoxMessage.SUB_TYPE, type = MessageConstV2.TYPE_DATA)
-public class TestToBoxMessage extends AbstractMessageV2 {
-    public static final int SUB_TYPE = 0x499102;
+@MessageType(subType = WashRequest.SUB_TYPE, type = MessageConstV2.TYPE_REQUEST)
+public class WashRequest extends AbstractMessageV2 {
+
+    public static final int SUB_TYPE = 0x499101;
+
     @MessageKey(1)
-    private String timestamp;
+    private String mode;
 }

@@ -5,7 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import com.maxtropy.ilaundry.monitor.model.DataReport;
+import com.maxtropy.ilaundry.monitor.message.send.MonitorReportMessage;
+import com.maxtropy.ilaundry.monitor.message.send.ReservableStatusMessage;
 import com.maxtropy.ilaundry.monitor.model.ElectricityRequest;
 import com.maxtropy.ilaundry.monitor.model.HumiTempRequest;
 import com.maxtropy.ilaundry.monitor.model.ModbusRequest;
@@ -24,8 +25,8 @@ import java.util.Random;
  */
 
 public class AlarmReportReceiver extends BroadcastReceiver {
-    private DataReport prev = new DataReport("Maxtropy", "", "", "", "", "", 2, 2);
-    private DataReport report;
+    private MonitorReportMessage prev = new MonitorReportMessage("Maxtropy", "", "", "", "", "", 2, 2);
+    private MonitorReportMessage report;
     private Context app;
     private Random ran = new Random(System.currentTimeMillis());
 
@@ -33,7 +34,7 @@ public class AlarmReportReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         Log.d(Const.TAG, "Receive intent action on AlarmReportReceiver: " + intent.getAction());
         app = context.getApplicationContext();
-        report = new DataReport();   //the new data report.
+        report = new MonitorReportMessage();   //the new data report.
         /*
         ModbusCenter.getInstance().sendModbusRequest(new HumiTempRequest(), htListener);
         try {
@@ -50,6 +51,9 @@ public class AlarmReportReceiver extends BroadcastReceiver {
         preparedToSend();
         */
         Roc.getInstance(app).sendMessage(report);
+
+        ReservableStatusMessage rsvMsg = new ReservableStatusMessage(1);
+        Roc.getInstance(app).sendMessage(rsvMsg);
     }
 
     private void preparedToSend() {

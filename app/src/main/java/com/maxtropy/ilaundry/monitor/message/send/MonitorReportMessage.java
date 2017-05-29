@@ -1,4 +1,4 @@
-package com.maxtropy.ilaundry.monitor.model;
+package com.maxtropy.ilaundry.monitor.message.send;
 
 import com.maxtropy.ilaundry.monitor.serial.Utils;
 import com.maxtropy.mockingbirds.annotation.MessageKey;
@@ -9,10 +9,10 @@ import com.maxtropy.mockingbirds.protocol.MessageConstV2;
 /**
  * Created by wusp on 2017/4/12.
  */
-@MessageType(subType = DataReport.SUB_TYPE, type = MessageConstV2.TYPE_REPORT)
-public class DataReport extends AbstractMessageV2 {
-    static final int SUB_TYPE = 0x499001;
-    static final String topic = "ilaundry_data";
+@MessageType(subType = MonitorReportMessage.SUB_TYPE, type = MessageConstV2.TYPE_REPORT)
+public class MonitorReportMessage extends AbstractMessageV2 {
+    static final int SUB_TYPE = 0x499100;
+    static final String topic = "ilaundry_device_report";
     @MessageKey(1)
     String source;
     @MessageKey(2)
@@ -32,8 +32,8 @@ public class DataReport extends AbstractMessageV2 {
     @MessageKey(9)
     int isCompressorWorking; //1:working 0:shutdown
 
-    public DataReport(String source, String temp, String humi, String latitude,
-                      String longitude, String speed, int isDoorOpened, int isCompressorWorking) {
+    public MonitorReportMessage(String source, String temp, String humi, String latitude,
+                                String longitude, String speed, int isDoorOpened, int isCompressorWorking) {
         this.source = source;
         this.temp = temp;
         this.humi = humi;
@@ -46,7 +46,7 @@ public class DataReport extends AbstractMessageV2 {
         this.isCompressorWorking = isCompressorWorking;
     }
 
-    public DataReport() {
+    public MonitorReportMessage() {
         this.source = "Maxtropy";
         this.timestamp = Utils.parseTimeStamp2FormatDate(System.currentTimeMillis());
         setTopic(topic);
@@ -58,7 +58,7 @@ public class DataReport extends AbstractMessageV2 {
 
     @Override
     public String toString() {
-        return "DataReport{" +
+        return "MonitorReportMessage{" +
                 "humi='" + humi + '\'' +
                 ", source='" + source + '\'' +
                 ", temp='" + temp + '\'' +
