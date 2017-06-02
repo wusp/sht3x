@@ -16,7 +16,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = false)
 @Data
 @ToString
-@MessageType(subType = TestToBoxMessage.SUB_TYPE, type = MessageConstV2.TYPE_DATA)
+@MessageType(subType = TestToBoxMessage.SUB_TYPE, type = MessageConstV2.TYPE_REPORT)
 public class TestToBoxMessage extends AbstractMessageV2 {
     public static final int SUB_TYPE = 0x499102;
     @MessageKey(1)

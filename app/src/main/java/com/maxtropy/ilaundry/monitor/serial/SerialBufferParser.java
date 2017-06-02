@@ -1,6 +1,5 @@
 package com.maxtropy.ilaundry.monitor.serial;
 
-import com.maxtropy.ilaundry.monitor.CRC16Checker;
 import com.maxtropy.ilaundry.monitor.model.ModbusRequest;
 import com.maxtropy.ilaundry.monitor.model.ModbusResponse;
 

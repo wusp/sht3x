@@ -1,4 +1,4 @@
-package com.maxtropy.ilaundry.monitor;
+package com.maxtropy.ilaundry.monitor.serial;
 
 /**
  * Created by jiaoew on 16/3/3.
