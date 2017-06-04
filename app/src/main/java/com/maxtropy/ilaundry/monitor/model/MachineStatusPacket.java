@@ -1,11 +1,13 @@
 package com.maxtropy.ilaundry.monitor.model;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * Created by Gerald on 6/3/2017.
  */
 @Data
+@EqualsAndHashCode(callSuper=false)
 public class MachineStatusPacket extends SerialPacket {
 
     int machineType, keypadData, cycleType, commandToReader, machineStatus;

@@ -8,6 +8,10 @@ public class SerialPacket {
 
     byte[] data;
 
+    public SerialPacket() {
+        data = null;
+    }
+
     public SerialPacket(byte[] data) {
         this.data = data;
     }
