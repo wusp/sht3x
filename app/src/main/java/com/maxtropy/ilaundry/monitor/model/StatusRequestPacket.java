@@ -6,6 +6,7 @@ package com.maxtropy.ilaundry.monitor.model;
 
 public class StatusRequestPacket extends SerialPacket {
     public StatusRequestPacket() {
+        tag = "Status Request";
         data = new byte[2];
         data[0] = 0x10;
         data[1] = 0;

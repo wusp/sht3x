@@ -10,6 +10,8 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper=false)
 public class MachineStatusPacket extends SerialPacket {
 
+    public final static byte code = 0x11;
+
     int machineType, keypadData, cycleType, commandToReader, machineStatus;
     int remainMinute, remainSecond;
 

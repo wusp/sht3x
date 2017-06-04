@@ -8,11 +8,13 @@ import android.util.Log;
 import com.maxtropy.ilaundry.monitor.Const;
 import com.maxtropy.ilaundry.monitor.message.send.MonitorReportMessage;
 import com.maxtropy.ilaundry.monitor.message.send.ReservableStatusMessage;
+import com.maxtropy.ilaundry.monitor.model.MachineStatusPacket;
 import com.maxtropy.ilaundry.monitor.model.SerialPacket;
 import com.maxtropy.ilaundry.monitor.serial.SerialResponseListener;
 import com.maxtropy.ilaundry.monitor.roc.Roc;
 import com.maxtropy.ilaundry.monitor.serial.SerialCommunicator;
 import com.maxtropy.ilaundry.monitor.serial.Utils;
+import com.maxtropy.mockingbirds.Messages;
 import com.softwinner.Gpio;
 
 import java.util.Random;
@@ -24,6 +26,9 @@ import java.util.Random;
  */
 
 public class MachineStatusCronService extends BroadcastReceiver {
+
+    SerialService serial = SerialService.getInstance();
+
     private MonitorReportMessage prev = new MonitorReportMessage("Maxtropy", "", "", "", "", "", 2, 2);
     private MonitorReportMessage report;
     private Context app;
@@ -33,15 +38,23 @@ public class MachineStatusCronService extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         Log.d(Const.TAG, "Receive intent action on MachineStatusCronService: " + intent.getAction());
         app = context.getApplicationContext();
-        report = new MonitorReportMessage();   //the new data report.
+        MachineStatusPacket machineStatus = serial.getMachineStatus();
+        Log.d(Const.TAG, "Machine status received.");
+        String tmp = "";
+        for(byte b : machineStatus.getData())
+            tmp += b + " ";
+        Log.d(Const.TAG, tmp);
         /*
         SerialCommunicator.getInstance();
         preparedToSend();
         */
+        /*
+        report = new MonitorReportMessage();   //the new data report.
         Roc.getInstance(app).sendMessage(report);
 
         ReservableStatusMessage rsvMsg = new ReservableStatusMessage(1);
         Roc.getInstance(app).sendMessage(rsvMsg);
+        */
     }
 
     private void preparedToSend() {
@@ -56,33 +69,5 @@ public class MachineStatusCronService extends BroadcastReceiver {
         Roc.getInstance(app).sendMessage(report);
         prev = report;
     }
-
-    private void onError(SerialPacket errorReq) {
-        if (errorReq == null) {
-            return;
-        }
-        SerialCommunicator.getInstance().restart();
-    }
-
-    private SerialResponseListener htListener = new SerialResponseListener() {
-        @Override
-        public void onResponse(SerialPacket msg) {
-            byte[] datas = msg.getData();
-            if (datas.length != 4) {
-                report.setHumi(prev.getHumi());
-                report.setTemp(prev.getTemp());
-            } else {
-                Log.d(Const.TAG, "receive temp: " + Utils.byte2Int(new byte[]{0x00, 0x00, datas[0], datas[1]}) / 10.0f);
-                Log.d(Const.TAG, "receive temp: " + Utils.byte2Int(new byte[]{0x00, 0x00, datas[2], datas[3]}) / 10.0f);
-                report.setTemp("" + Utils.byte2Int(new byte[]{0x00, 0x00, datas[0], datas[1]}) / 10.0f);
-                report.setHumi("" + Utils.byte2Int(new byte[]{0x00, 0x00, datas[2], datas[3]}) / 10.0f);
-            }
-        }
-
-        @Override
-        public void onOverTime(SerialPacket msg) {
-            onError(msg);
-        }
-    };
 
 }

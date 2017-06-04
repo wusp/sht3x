@@ -6,8 +6,9 @@ package com.maxtropy.ilaundry.monitor.model;
 
 public class VendPricePacket extends SerialPacket {
     public VendPricePacket() {
-        data = new byte[2];
+        tag = "vend price";
+        data = new byte[4];
         data[0] = 0x12;
-        data[1] = 0;
+        data[3] = 1;
     }
 }

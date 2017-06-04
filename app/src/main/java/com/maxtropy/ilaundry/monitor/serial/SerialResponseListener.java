@@ -8,5 +8,4 @@ import com.maxtropy.ilaundry.monitor.model.SerialPacket;
 
 public interface SerialResponseListener {
     void onResponse(SerialPacket msg);
-    void onOverTime(SerialPacket msg);
 }

@@ -7,9 +7,11 @@ import android.util.Log;
 
 import com.maxtropy.ilaundry.monitor.Const;
 import com.maxtropy.ilaundry.monitor.model.SerialPacket;
+import com.maxtropy.ilaundry.monitor.model.StatusRequestPacket;
 
 import java.io.IOException;
 import java.util.TooManyListenersException;
+import java.util.concurrent.locks.ReentrantLock;
 
 import purejavacomm.SerialPort;
 import purejavacomm.SerialPortEvent;
@@ -41,8 +43,45 @@ public class SerialCommunicator {
     private HandlerThread worker;
     private volatile boolean isPortOpened = false;
     private volatile boolean canWrite = false;
-    private volatile SerialResponseListener responseListener;  //已发送的请求同收到的请求进行配对
-    private SerialOTRunnable mOTRunnable = new SerialOTRunnable();
+
+    // 握有lock的线程才可以对消息队列进行添加消息操作
+    // 保证消息发送能够有自己的消息处理逻辑（不会被别人干扰）
+    private ReentrantLock msgLock = new ReentrantLock();
+    // 当前正在服务的线程。当对方发回ACK时会被唤醒
+    private Thread currentServingThread;
+    private boolean waitResponse = false;
+    private SerialPacket lastReq;
+
+    public void lock() {
+        msgLock.lock();
+    }
+
+    public void unlock() {
+        msgLock.unlock();
+    }
+
+    // This listener need to be assigned after created
+    private volatile SerialResponseListener responseListener = new SerialResponseListener() {
+        @Override
+        public void onResponse(SerialPacket msg) {
+            Log.e(Const.TAG, "SerialResponseListener not assigned error.");
+        }
+    };
+    private boolean responseListenerAssignedFlag = false;
+
+    private Runnable timeoutRunnable = new Runnable() {
+        @Override
+        public void run() {
+            onTimeOut();
+        }
+    };
+
+    void setResponseListener(SerialResponseListener responseListener) {
+        if(responseListenerAssignedFlag)
+            Log.w(Const.TAG, "ResponseListener has been assigned.");
+        responseListenerAssignedFlag = true;
+        this.responseListener = responseListener;
+    }
 
     private SerialCommunicator() {
         worker = new HandlerThread("SerialCommunicator");
@@ -52,14 +91,14 @@ public class SerialCommunicator {
             public boolean handleMessage(Message msg) {
                 switch (msg.what) {
                     case ACTION_OPEN_PORT:
-                        openPort();
+                        onOpenPort();
                         break;
                     case ACTION_CLEAR_PORT:
-                        clearPort();
+                        onClearPort();
                         break;
                     case ACTION_RESTART_PORT:
-                        clearPort();
-                        openPort();
+                        onClearPort();
+                        onOpenPort();
                         break;
                     case ACTION_SEND_REQUEST:
                         if (msg.obj != null) {
@@ -81,7 +120,7 @@ public class SerialCommunicator {
         return mInstance;
     }
 
-    public void run() {
+    public void openPort() {
         mHandler.obtainMessage(ACTION_OPEN_PORT).sendToTarget();
         Log.d(Const.TAG, "open port and start to run.");
     }
@@ -90,7 +129,7 @@ public class SerialCommunicator {
         mHandler.obtainMessage(ACTION_RESTART_PORT).sendToTarget();
     }
 
-    private void clearPort() {
+    private void onClearPort() {
         Log.i(Const.TAG, "Clearing port: " + COMMAND_PORT);
         if (mPort != null) {
             mPort.removeEventListener();
@@ -104,7 +143,7 @@ public class SerialCommunicator {
         responseListener = null;
     }
 
-    private void openPort() {
+    private void onOpenPort() {
         if (isPortOpened) {
             return;
         }
@@ -121,21 +160,41 @@ public class SerialCommunicator {
         }
     }
 
-    public boolean sendModbusRequest(SerialPacket req) {
+    /**
+     * 预设发送数据包函数：会发送最近发送的一个数据包。用于初次发送或者失败重新发送
+     */
+    private void sendPacket() {
+        writeDataToBuffer(lastReq.getData());
+        mHandler.postDelayed(timeoutRunnable, REQUEST_TIME_OUT);
+    }
+
+    public boolean sendPacket(SerialPacket req, Thread callingThread, boolean waitResponse) {
         if (req == null || req.getData() != null || mPort == null || !canWrite || !isPortOpened) {
+            Log.e(Const.TAG, "ERROR WHEN SENDING A PACKET: PORT NOT READY OR EMPTY PACKET");
             return false;
         }
-        byte[] data = null;
-        writeDataToBuffer(data);
-        mOTRunnable.setRequest(req);
-        mHandler.postDelayed(mOTRunnable, REQUEST_TIME_OUT);
-        return true;
+        if(currentServingThread != null) {
+            // 某个线程没有拿到锁就发了消息，导致其他线程介入并且在之前逻辑没走完就发了新的消息
+            Log.e(Const.TAG, "ERROR! Not synchronized packet sending. Get a lock before send the packet and put the thread to sleep!");
+            return false;
+        }
+        try {
+            this.waitResponse = waitResponse;
+            currentServingThread = callingThread;
+            lastReq = req;
+            sendPacket();
+            callingThread.wait();
+            return true;
+        } catch(InterruptedException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     /**
      * 将已经转换成比特数组的Mod-Bus request写入到串口的输出缓冲区。
      *
-     * @param data
+     * @param data 要被传输的数据
      */
     private void writeDataToBuffer(byte[] data) {
         if (data == null) {
@@ -153,18 +212,8 @@ public class SerialCommunicator {
         }
     }
 
-    /**
-     * 接收到已经编码的Mod-Bus response, 将其提交给该返回消息的监听者，并移除超时触发器和监听者。
-     *
-     * @param res
-     */
     private void onReceiveResponse(SerialPacket res) {
-        if (responseListener != null) {
-            mHandler.removeCallbacks(mOTRunnable);
-            responseListener.onResponse(res);
-        } else {
-            Log.e(Const.TAG, "responseListener is null.");
-        }
+        responseListener.onResponse(res);
     }
 
     /**
@@ -172,7 +221,6 @@ public class SerialCommunicator {
      */
     private void onError(String reason) {
         Log.e(Const.TAG, "Error: " + reason);
-        mOTRunnable.run();
         restart();
     }
 
@@ -191,13 +239,38 @@ public class SerialCommunicator {
                     if (n != buffer.length) {
                         onError("Read buffer size: " + n + " is not equal to available length: " + buffer.length);
                     }
-                    // TODO maybe the packet is not sent in a whole
+                    // TODO 包也许没有完整传送
+                    mHandler.removeCallbacks(timeoutRunnable);
                     if(buffer.length == 1) {
+                        switch(buffer[0]) {
+                            case 0x06:
+                                // ACK: 唤醒business logic线程，令其可以继续逻辑或者释放锁
+                                if(!waitResponse) {
+                                    currentServingThread.notify();
+                                    currentServingThread = null;
+                                }
+                                break;
+                            case 0x15:
+                                // NAK
+                                Log.w(Const.TAG, "NAK : " + lastReq.getTag());
+                                sendPacket();
+                                break;
+                            case 0x09:
+                                // INV
+                                Log.w(Const.TAG, "INV : " + lastReq.getTag());
+                                sendPacket();
+                                break;
+                        }
                         return;
                     }
+                    // TODO 没有判断包与包之间超时，即waitResponse有可能导致死锁
                     final SerialPacket res = new SerialPacket(buffer);
-
                     mHandler.obtainMessage(ACTION_RECEIVE_RESPONSE, res).sendToTarget();
+                    if(waitResponse) {
+                        waitResponse = false;
+                        currentServingThread.notify();
+                        currentServingThread = null;
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -205,22 +278,9 @@ public class SerialCommunicator {
         }
     };
 
-    /**
-     * 用来激发检查已经超时的请求，由于在结果成功返回时本超时检查任务会从Handler中移除，因此被激发则说明请求已经超时。
-     */
-    private class SerialOTRunnable implements Runnable {
-        private SerialPacket req;
-
-        public void setRequest(SerialPacket req) {
-            this.req = req;
-        }
-
-        @Override
-        public void run() {
-            if (responseListener != null) {
-                responseListener.onOverTime(req);
-                restart();
-            }
-        }
+    void onTimeOut() {
+        // TODO no resend mechanism enforced
+        restart();
     }
+
 }

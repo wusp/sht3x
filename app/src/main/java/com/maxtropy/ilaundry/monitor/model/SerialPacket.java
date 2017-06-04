@@ -49,4 +49,10 @@ public class SerialPacket {
         return data;
     }
 
+    String tag;
+
+    public String getTag() {
+        return tag;
+    }
+
 }
