@@ -13,7 +13,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.maxtropy.ilaundry.monitor.roc.Roc;
-import com.maxtropy.ilaundry.monitor.serial.Utils;
+import com.maxtropy.ilaundry.monitor.service.MachineStatusCronService;
 import com.maxtropy.roc.util.IntentReceiver;
 
 
@@ -44,10 +44,10 @@ public class ReportService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(Const.TAG, "Service started.");
-        // ModbusCenter.getInstance().run();
+        // SerialCommunicator.getInstance().run();
         Roc.getInstance(this);
         am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        Intent i = new Intent(this, AlarmReportReceiver.class);
+        Intent i = new Intent(this, MachineStatusCronService.class);
         alarmIntent = PendingIntent.getBroadcast(this, 0, i, 0);
         // am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + Utils.nextUploadTimeGap(), 300 * 1000, alarmIntent);
         am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 1000, alarmIntent);

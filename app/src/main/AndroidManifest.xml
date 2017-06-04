@@ -14,7 +14,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:name="com.maxtropy.ilaundry.monitor.MyApp">
-        <receiver android:name="com.maxtropy.ilaundry.monitor.AlarmReportReceiver" />
+        <receiver android:name="com.maxtropy.ilaundry.monitor.service.MachineStatusCronService" />
         <service
             android:name="com.maxtropy.ilaundry.monitor.ReportService"
             android:enabled="true"

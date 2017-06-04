@@ -6,9 +6,7 @@ import android.os.Message;
 import android.util.Log;
 
 import com.maxtropy.ilaundry.monitor.Const;
-import com.maxtropy.ilaundry.monitor.model.ModbusRequest;
-import com.maxtropy.ilaundry.monitor.model.ModbusResponse;
-import com.maxtropy.ilaundry.monitor.model.ModbusResponseListener;
+import com.maxtropy.ilaundry.monitor.model.SerialPacket;
 
 import java.io.IOException;
 import java.util.TooManyListenersException;
@@ -26,7 +24,7 @@ import purejavacomm.SerialPortEventListener;
  * Created by wusp on 2017/3/31.
  */
 
-public class ModbusCenter {
+public class SerialCommunicator {
     private static final String COMMAND_PORT = "ttyS5";
     private static final long REQUEST_TIME_OUT = 1000;
 
@@ -36,20 +34,20 @@ public class ModbusCenter {
     private static final int ACTION_SEND_REQUEST = 0x03;
     private static final int ACTION_RECEIVE_RESPONSE = 0x04;
 
-    private static ModbusCenter mInstance = new ModbusCenter();
+    private static SerialCommunicator mInstance = new SerialCommunicator();
 
     private SerialPort mPort;
     private Handler mHandler;
     private HandlerThread worker;
     private volatile boolean isPortOpened = false;
     private volatile boolean canWrite = false;
-    private volatile ModbusResponseListener responseListener;  //已发送的请求同收到的请求进行配对
-    private ModBusOTRunnable mOTRunnable = new ModBusOTRunnable();
+    private volatile SerialResponseListener responseListener;  //已发送的请求同收到的请求进行配对
+    private SerialOTRunnable mOTRunnable = new SerialOTRunnable();
 
-    private ModbusCenter() {
-        worker = new HandlerThread("ModbusCenter");
+    private SerialCommunicator() {
+        worker = new HandlerThread("SerialCommunicator");
         worker.start();
-        Handler.Callback callback = new Handler.Callback() {
+        mHandler = new Handler(worker.getLooper(), new Handler.Callback() {
             @Override
             public boolean handleMessage(Message msg) {
                 switch (msg.what) {
@@ -70,17 +68,16 @@ public class ModbusCenter {
                         break;
                     case ACTION_RECEIVE_RESPONSE:
                         if (msg.obj != null) {
-                            onReceiveResponse((ModbusResponse) msg.obj);
+                            onReceiveResponse((SerialPacket) msg.obj);
                         }
                         break;
                 }
                 return true;
             }
-        };
-        mHandler = new Handler(worker.getLooper(), callback);
+        });
     }
 
-    public static ModbusCenter getInstance() {
+    public static SerialCommunicator getInstance() {
         return mInstance;
     }
 
@@ -124,30 +121,13 @@ public class ModbusCenter {
         }
     }
 
-    public boolean canSendRequest() {
-        return isPortOpened && canWrite;
-    }
-
-    /**
-     * 通过串口发送查询指令
-     *
-     * @param req
-     * @return
-     */
-    public boolean sendModbusRequest(ModbusRequest req, ModbusResponseListener listener) {
-        if (req == null || req.getRegisterCount() == null || req.getStartRegister() == null
-                || mPort == null || !canWrite || !isPortOpened) {
+    public boolean sendModbusRequest(SerialPacket req) {
+        if (req == null || req.getData() != null || mPort == null || !canWrite || !isPortOpened) {
             return false;
         }
-        Log.d(Const.TAG, "Sent a Packet, request: " + req.getSlaveAddress() + " " + req.getStartRegister()[req.getStartRegister().length - 1] + " " + req.getRegisterCount()[req.getRegisterCount().length - 1]);
-        byte[] data = SerialBufferParser.decodeRequest(req, req.getCrcOrder());
-        if (data == null) {
-            Log.e(Const.TAG, "Cannot decode the request to byte[], req: " + req.toString());
-            return false;
-        }
-        responseListener = listener;
+        byte[] data = null;
         writeDataToBuffer(data);
-        mOTRunnable.monitorReq(req);
+        mOTRunnable.setRequest(req);
         mHandler.postDelayed(mOTRunnable, REQUEST_TIME_OUT);
         return true;
     }
@@ -174,37 +154,11 @@ public class ModbusCenter {
     }
 
     /**
-     * 处理串口发回的响应信息
-     */
-    private void processInput() {
-        if (mPort == null) {
-            throw new NullPointerException("SerialPort is null on processInput().");
-        }
-        try {
-            byte[] buffer;
-            buffer = new byte[mPort.getInputStream().available()];
-            int n = mPort.getInputStream().read(buffer);
-            if (n != buffer.length) {
-                onError("Read buffer size: " + n + " is not equal to available length: " + buffer.length);
-            }
-            final ModbusResponse res = SerialBufferParser.encodeResponse(buffer);
-            if (res != null) {
-                mHandler.obtainMessage(ACTION_RECEIVE_RESPONSE, res).sendToTarget();
-            } else {
-                Log.d(Const.TAG, "response is null.");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            onError("Read buffer with IOException.");
-        }
-    }
-
-    /**
      * 接收到已经编码的Mod-Bus response, 将其提交给该返回消息的监听者，并移除超时触发器和监听者。
      *
      * @param res
      */
-    private void onReceiveResponse(ModbusResponse res) {
+    private void onReceiveResponse(SerialPacket res) {
         if (responseListener != null) {
             mHandler.removeCallbacks(mOTRunnable);
             responseListener.onResponse(res);
@@ -228,14 +182,25 @@ public class ModbusCenter {
             if (serialPortEvent.getEventType() == SerialPortEvent.OUTPUT_BUFFER_EMPTY) {
                 canWrite = true;
             }
-
             if (serialPortEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
                 try {
                     Log.d(Const.TAG, "Data_Available. " + mPort.getInputStream().available());
+                    byte[] buffer;
+                    buffer = new byte[mPort.getInputStream().available()];
+                    int n = mPort.getInputStream().read(buffer);
+                    if (n != buffer.length) {
+                        onError("Read buffer size: " + n + " is not equal to available length: " + buffer.length);
+                    }
+                    // TODO maybe the packet is not sent in a whole
+                    if(buffer.length == 1) {
+                        return;
+                    }
+                    final SerialPacket res = new SerialPacket(buffer);
+
+                    mHandler.obtainMessage(ACTION_RECEIVE_RESPONSE, res).sendToTarget();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                processInput();
             }
         }
     };
@@ -243,10 +208,10 @@ public class ModbusCenter {
     /**
      * 用来激发检查已经超时的请求，由于在结果成功返回时本超时检查任务会从Handler中移除，因此被激发则说明请求已经超时。
      */
-    private class ModBusOTRunnable implements Runnable {
-        private ModbusRequest req;
+    private class SerialOTRunnable implements Runnable {
+        private SerialPacket req;
 
-        void monitorReq(ModbusRequest req) {
+        public void setRequest(SerialPacket req) {
             this.req = req;
         }
 

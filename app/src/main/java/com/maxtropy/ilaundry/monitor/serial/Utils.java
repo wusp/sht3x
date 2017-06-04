@@ -14,25 +14,6 @@ import java.util.Locale;
 public class Utils {
     private static final int CRC16_SEED = 0xFFFF;
 
-    /**
-     * 普通的crc16值，如果是Modbus，只需要提取低位的16位
-     * @param buffer
-     * @return
-     */
-    public static int crc16(final byte[] buffer) {
-        int crc = 0xFFFF;
-
-        for (int j = 0; j < buffer.length ; j++) {
-            crc = ((crc  >>> 8) | (crc  << 8) )& 0xffff;
-            crc ^= (buffer[j] & 0xff);//byte to int, trunc sign
-            crc ^= ((crc & 0xff) >> 4);
-            crc ^= (crc << 12) & 0xffff;
-            crc ^= ((crc & 0xFF) << 5) & 0xffff;
-        }
-        crc &= 0xffff;
-        return crc;
-    }
-
     public static int byte2Int(byte[] rno) {
         return (rno[0]<<24)&0xff000000|
                 (rno[1]<<16)&0x00ff0000|
