@@ -60,15 +60,17 @@ public class SerialService implements SerialResponseListener {
         }
     }
 
-    public MachineStatusPacket getMachineStatus() {
+    public synchronized MachineStatusPacket getMachineStatus() {
         if(programming)
             return null;
         serial.lock();
         try {
             // 发送完需要等待MachineStatusPacket返回
             serial.sendPacket(new StatusRequestPacket(), Thread.currentThread(), MachineStartPacket.code);
+            /*
             // 只需要等待ACK即可
             serial.sendPacket(new VendPricePacket(), Thread.currentThread());
+            */
             return machineStatus;
         } finally {
             serial.unlock();

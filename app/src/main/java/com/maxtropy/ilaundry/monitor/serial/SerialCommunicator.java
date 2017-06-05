@@ -158,9 +158,17 @@ public class SerialCommunicator {
             try {
                 isPortOpened = true;
                 mPort.addEventListener(mListener);
+                /*
+                byte[] data = new byte[]{0x02, 0x02, 0x10, 0x00, 0x10};
+                mPort.getOutputStream().write(data);
+                mPort.getOutputStream().flush();
+                */
+                Log.i(Const.TAG, "port " + COMMAND_PORT + " opened");
             } catch (TooManyListenersException e) {
                 e.printStackTrace();
                 onError("Too many listeners Exception on add listener to port.");
+            } catch(Exception e) {
+                e.printStackTrace();
             }
         }
     }
@@ -174,7 +182,7 @@ public class SerialCommunicator {
             return;
         }
         retryTimes ++;
-        writeDataToBuffer(lastReq.getData());
+        writeDataToBuffer(lastReq.toBytes());
         mHandler.postDelayed(timeoutRunnable, REQUEST_TIME_OUT);
     }
 
@@ -183,26 +191,31 @@ public class SerialCommunicator {
     }
 
     public boolean sendPacket(SerialPacket req, Thread callingThread, byte waitResponseCode) {
-        if (req == null || req.getData() != null || mPort == null || !canWrite || !isPortOpened) {
+        if (req == null || req.getData() == null || mPort == null || !canWrite || !isPortOpened) {
             Log.e(Const.TAG, "ERROR WHEN SENDING A PACKET: PORT NOT READY OR EMPTY PACKET");
             return false;
         }
         if(currentServingThread != null) {
             // 某个线程没有拿到锁就发了消息，导致其他线程介入并且在之前逻辑没走完就发了新的消息
             Log.e(Const.TAG, "ERROR! Not synchronized packet sending. Get a lock before send the packet and put the thread to sleep!");
-            return false;
+            // return false;
         }
-        try {
-            this.waitResponseCode = waitResponseCode;
-            currentServingThread = callingThread;
-            lastReq = req;
-            sendPacket();
-            callingThread.wait();
-            return true;
-        } catch(InterruptedException e) {
-            e.printStackTrace();
-            return false;
+        this.waitResponseCode = waitResponseCode;
+        currentServingThread = callingThread;
+        lastReq = req;
+        sendPacket();
+        /*
+        synchronized (callingThread) {
+            try {
+                Log.d(Const.TAG, "lock");
+                callingThread.wait();
+            } catch(InterruptedException e) {
+                e.printStackTrace();
+                return false;
+            }
         }
+        */
+        return true;
     }
 
     /**
@@ -211,13 +224,17 @@ public class SerialCommunicator {
      * @param data 要被传输的数据
      */
     private void writeDataToBuffer(byte[] data) {
-        if (data == null) {
+        if (data == null)
             return;
-        }
-        for (byte b : data) {
-            Log.d(Const.TAG, "data: " + b);
-        }
+        String tmp = "Send msg: ";
+        for (byte b : data)
+            tmp += b + " ";
+        Log.d(Const.TAG, tmp);
         try {
+            if(mPort.getOutputStream() == null) {
+                Log.e(Const.TAG, "no output stream");
+                return;
+            }
             mPort.getOutputStream().write(data);
             mPort.getOutputStream().flush();
         } catch (Exception e) {
@@ -235,8 +252,8 @@ public class SerialCommunicator {
      */
     private void onError(String reason) {
         Log.e(Const.TAG, "Error: " + reason);
-        responseListener.onError(reason);
-        restart();
+        // responseListener.onError(reason);
+        // restart();
     }
 
     private SerialPortEventListener mListener = new SerialPortEventListener() {
@@ -261,8 +278,9 @@ public class SerialCommunicator {
                         switch(buffer[0]) {
                             case 0x06:
                                 // ACK: 唤醒business logic线程，令其可以继续逻辑或者释放锁
+                                retryTimes = 0;
                                 if(waitResponseCode == 0x00) {
-                                    currentServingThread.notify();
+                                    // currentServingThread.notify();
                                     currentServingThread = null;
                                 }
                                 break;
@@ -288,7 +306,7 @@ public class SerialCommunicator {
                     mHandler.obtainMessage(ACTION_RECEIVE_RESPONSE, res).sendToTarget();
                     if(waitResponseCode == res.getData()[2]) {
                         waitResponseCode = 0x00;
-                        currentServingThread.notify();
+                        // currentServingThread.notify();
                         currentServingThread = null;
                     }
                 } catch (IOException e) {
@@ -300,7 +318,7 @@ public class SerialCommunicator {
 
     void onTimeOut() {
         // TODO no resend mechanism enforced
-        restart();
+        // restart();
     }
 
 }

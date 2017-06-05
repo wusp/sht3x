@@ -14,6 +14,7 @@ import android.util.Log;
 
 import com.maxtropy.ilaundry.monitor.roc.Roc;
 import com.maxtropy.ilaundry.monitor.service.MachineStatusCronService;
+import com.maxtropy.ilaundry.monitor.service.SerialService;
 import com.maxtropy.roc.util.IntentReceiver;
 
 
@@ -25,10 +26,12 @@ public class ReportService extends Service {
     private AlarmManager am;
     private PendingIntent alarmIntent;
     private IntentReceiver coreIntentReceiver = null;
+    SerialService serial;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.d(Const.TAG, "Waiting for debugger...");
         // android.os.Debug.waitForDebugger();
         Log.d(Const.TAG, "Service created.");
         coreIntentReceiver = new IntentReceiver(getClass().getName());
@@ -50,7 +53,8 @@ public class ReportService extends Service {
         Intent i = new Intent(this, MachineStatusCronService.class);
         alarmIntent = PendingIntent.getBroadcast(this, 0, i, 0);
         // am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + Utils.nextUploadTimeGap(), 300 * 1000, alarmIntent);
-        am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 1000, alarmIntent);
+        // am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 2000, alarmIntent);
+        serial = SerialService.getInstance();
         return START_STICKY;
     }
 
