@@ -27,7 +27,8 @@ public class RemainTimeMessage extends AbstractMessageV2 {
     @MessageKey(1)
     private int remainingTime;
 
-    public RemainTimeMessage() {
+    public RemainTimeMessage(int remainingTime) {
+        this.remainingTime = remainingTime;
         setTopic(topic);
     }
 

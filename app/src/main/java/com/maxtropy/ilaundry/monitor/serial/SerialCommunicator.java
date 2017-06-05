@@ -7,7 +7,6 @@ import android.util.Log;
 
 import com.maxtropy.ilaundry.monitor.Const;
 import com.maxtropy.ilaundry.monitor.model.SerialPacket;
-import com.maxtropy.ilaundry.monitor.model.StatusRequestPacket;
 
 import java.io.IOException;
 import java.util.TooManyListenersException;
@@ -49,8 +48,10 @@ public class SerialCommunicator {
     private ReentrantLock msgLock = new ReentrantLock();
     // 当前正在服务的线程。当对方发回ACK时会被唤醒
     private Thread currentServingThread;
-    private boolean waitResponse = false;
+    // 0x00 表示没有在等待的数据包
+    private byte waitResponseCode = 0x00;
     private SerialPacket lastReq;
+    private int retryTimes = 0;
 
     public void lock() {
         msgLock.lock();
@@ -64,6 +65,10 @@ public class SerialCommunicator {
     private volatile SerialResponseListener responseListener = new SerialResponseListener() {
         @Override
         public void onResponse(SerialPacket msg) {
+            Log.e(Const.TAG, "SerialResponseListener not assigned error.");
+        }
+        @Override
+        public void onError(String reason) {
             Log.e(Const.TAG, "SerialResponseListener not assigned error.");
         }
     };
@@ -164,11 +169,20 @@ public class SerialCommunicator {
      * 预设发送数据包函数：会发送最近发送的一个数据包。用于初次发送或者失败重新发送
      */
     private void sendPacket() {
+        if(retryTimes == 3) {
+            onError("Retried 3 times.");
+            return;
+        }
+        retryTimes ++;
         writeDataToBuffer(lastReq.getData());
         mHandler.postDelayed(timeoutRunnable, REQUEST_TIME_OUT);
     }
 
-    public boolean sendPacket(SerialPacket req, Thread callingThread, boolean waitResponse) {
+    public boolean sendPacket(SerialPacket req, Thread callingThread) {
+        return sendPacket(req, callingThread, (byte)0x00);
+    }
+
+    public boolean sendPacket(SerialPacket req, Thread callingThread, byte waitResponseCode) {
         if (req == null || req.getData() != null || mPort == null || !canWrite || !isPortOpened) {
             Log.e(Const.TAG, "ERROR WHEN SENDING A PACKET: PORT NOT READY OR EMPTY PACKET");
             return false;
@@ -179,7 +193,7 @@ public class SerialCommunicator {
             return false;
         }
         try {
-            this.waitResponse = waitResponse;
+            this.waitResponseCode = waitResponseCode;
             currentServingThread = callingThread;
             lastReq = req;
             sendPacket();
@@ -221,6 +235,7 @@ public class SerialCommunicator {
      */
     private void onError(String reason) {
         Log.e(Const.TAG, "Error: " + reason);
+        responseListener.onError(reason);
         restart();
     }
 
@@ -241,11 +256,12 @@ public class SerialCommunicator {
                     }
                     // TODO 包也许没有完整传送
                     mHandler.removeCallbacks(timeoutRunnable);
+                    retryTimes = 0;
                     if(buffer.length == 1) {
                         switch(buffer[0]) {
                             case 0x06:
                                 // ACK: 唤醒business logic线程，令其可以继续逻辑或者释放锁
-                                if(!waitResponse) {
+                                if(waitResponseCode == 0x00) {
                                     currentServingThread.notify();
                                     currentServingThread = null;
                                 }
@@ -264,10 +280,14 @@ public class SerialCommunicator {
                         return;
                     }
                     // TODO 没有判断包与包之间超时，即waitResponse有可能导致死锁
+                    // 收到完整包
                     final SerialPacket res = new SerialPacket(buffer);
+                    if(!res.isValid()) {
+                        return;
+                    }
                     mHandler.obtainMessage(ACTION_RECEIVE_RESPONSE, res).sendToTarget();
-                    if(waitResponse) {
-                        waitResponse = false;
+                    if(waitResponseCode == res.getData()[2]) {
+                        waitResponseCode = 0x00;
                         currentServingThread.notify();
                         currentServingThread = null;
                     }

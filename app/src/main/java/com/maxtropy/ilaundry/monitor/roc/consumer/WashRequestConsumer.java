@@ -7,6 +7,7 @@ import com.maxtropy.ilaundry.monitor.message.receive.TestToBoxMessage;
 import com.maxtropy.ilaundry.monitor.message.receive.WashRequest;
 import com.maxtropy.ilaundry.monitor.message.send.RemainTimeMessage;
 import com.maxtropy.ilaundry.monitor.roc.Roc;
+import com.maxtropy.ilaundry.monitor.service.SerialService;
 import com.maxtropy.mockingbirds.protocol.MessageAnnotationRegistry;
 import com.maxtropy.roc.IMessageConsumer;
 import com.maxtropy.roc.RocChannel;
@@ -33,11 +34,7 @@ public class WashRequestConsumer implements IMessageConsumer {
                 return;
             }
             Log.d(Const.TAG, "[washRequest] " + response.getMode());
-
-            // TODO send remaining time message to server
-            RemainTimeMessage msg = new RemainTimeMessage();
-            msg.setRemainingTime(5);
-            roc.sendMessage(msg);
+            SerialService.getInstance().initiateWechatWash(Integer.valueOf(response.getMode()));
         } catch (Exception e) {
             e.printStackTrace();
         }

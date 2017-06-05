@@ -11,6 +11,7 @@ import com.maxtropy.ilaundry.monitor.Const;
 import com.maxtropy.ilaundry.monitor.R;
 import com.maxtropy.ilaundry.monitor.roc.consumer.TestToBoxConsumer;
 import com.maxtropy.ilaundry.monitor.roc.consumer.WashRequestConsumer;
+import com.maxtropy.ilaundry.monitor.service.SerialService;
 import com.maxtropy.mockingbirds.protocol.IMessageV2;
 import com.maxtropy.roc.RocChannel;
 import com.maxtropy.roc.RocMessageReceiver;
@@ -46,6 +47,11 @@ public class Roc {
                 }
             }
         }
+        return singleton;
+    }
+
+    // TODO This is a hack..
+    public static Roc getInstance() {
         return singleton;
     }
 

@@ -1,4 +1,6 @@
-package com.maxtropy.ilaundry.monitor.model;
+package com.maxtropy.ilaundry.monitor.model.receive;
+
+import com.maxtropy.ilaundry.monitor.model.SerialPacket;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -14,6 +16,10 @@ public class MachineStatusPacket extends SerialPacket {
 
     int machineType, keypadData, cycleType, commandToReader, machineStatus;
     int remainMinute, remainSecond;
+
+    public boolean isMode(int bit) {
+        return (machineStatus & (1 << bit-1) ) != 0;
+    }
 
     public MachineStatusPacket(SerialPacket packet) {
         data = packet.getData();

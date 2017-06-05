@@ -7,14 +7,8 @@ import android.util.Log;
 
 import com.maxtropy.ilaundry.monitor.Const;
 import com.maxtropy.ilaundry.monitor.message.send.MonitorReportMessage;
-import com.maxtropy.ilaundry.monitor.message.send.ReservableStatusMessage;
-import com.maxtropy.ilaundry.monitor.model.MachineStatusPacket;
-import com.maxtropy.ilaundry.monitor.model.SerialPacket;
-import com.maxtropy.ilaundry.monitor.serial.SerialResponseListener;
+import com.maxtropy.ilaundry.monitor.model.receive.MachineStatusPacket;
 import com.maxtropy.ilaundry.monitor.roc.Roc;
-import com.maxtropy.ilaundry.monitor.serial.SerialCommunicator;
-import com.maxtropy.ilaundry.monitor.serial.Utils;
-import com.maxtropy.mockingbirds.Messages;
 import com.softwinner.Gpio;
 
 import java.util.Random;
@@ -39,6 +33,9 @@ public class MachineStatusCronService extends BroadcastReceiver {
         Log.d(Const.TAG, "Receive intent action on MachineStatusCronService: " + intent.getAction());
         app = context.getApplicationContext();
         MachineStatusPacket machineStatus = serial.getMachineStatus();
+        if(machineStatus == null) {
+            Log.w(Const.TAG, "Not able to get machine status");
+        }
         Log.d(Const.TAG, "Machine status received.");
         String tmp = "";
         for(byte b : machineStatus.getData())

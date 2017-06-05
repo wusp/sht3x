@@ -6,14 +6,16 @@ package com.maxtropy.ilaundry.monitor.model;
 
 public class SerialPacket {
 
-    byte[] data;
+    protected byte[] data;
 
     public SerialPacket() {
         data = null;
+        tag = "";
     }
 
     public SerialPacket(byte[] data) {
         this.data = data;
+        tag = "";
     }
 
     byte calcBCC(byte[] ret) {
@@ -49,10 +51,19 @@ public class SerialPacket {
         return data;
     }
 
-    String tag;
+    protected String tag;
 
     public String getTag() {
         return tag;
+    }
+
+    public void putShort(int offset, int value) {
+        data[offset] = (byte)(value / 0x100);
+        data[offset + 1] = (byte)(value % 0x100);
+    }
+
+    public void putByte(int offset, int value) {
+        data[offset] =  (byte)value;
     }
 
 }
