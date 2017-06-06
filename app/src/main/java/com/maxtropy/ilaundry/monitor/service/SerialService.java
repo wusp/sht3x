@@ -38,6 +38,7 @@ public class SerialService implements SerialResponseListener {
     private SerialService() {
         serial = SerialCommunicator.getInstance();
         serial.openPort();
+        serial.setResponseListener(this);
         roc = Roc.getInstance();
     }
 
@@ -66,11 +67,9 @@ public class SerialService implements SerialResponseListener {
         serial.lock();
         try {
             // 发送完需要等待MachineStatusPacket返回
-            serial.sendPacket(new StatusRequestPacket(), Thread.currentThread(), MachineStartPacket.code);
-            /*
+            serial.sendPacket(new StatusRequestPacket(), Thread.currentThread(), MachineStatusPacket.code);
             // 只需要等待ACK即可
             serial.sendPacket(new VendPricePacket(), Thread.currentThread());
-            */
             return machineStatus;
         } finally {
             serial.unlock();
@@ -100,7 +99,7 @@ public class SerialService implements SerialResponseListener {
     public void onResponse(SerialPacket msg) {
         // On serial message received
         byte[] data = msg.getData();
-        switch(data[0]) {
+        switch(data[1]) {
             case MachineStatusPacket.code:
                 Log.d(Const.TAG, "Machine status received");
                 machineStatus = new MachineStatusPacket(msg);

@@ -12,7 +12,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper=false)
 public class MachineStatusPacket extends SerialPacket {
 
-    public final static byte code = 0x11;
+    public final static byte code = 11;
 
     int machineType, keypadData, cycleType, commandToReader, machineStatus;
     int remainMinute, remainSecond;
@@ -23,12 +23,12 @@ public class MachineStatusPacket extends SerialPacket {
 
     public MachineStatusPacket(SerialPacket packet) {
         data = packet.getData();
-        machineType = data[1];
-        keypadData = data[2];
-        cycleType = data[3];
-        commandToReader = data[4];
-        machineStatus = data[5] * 0x100 + data[6];
-        remainMinute = data[9];
-        remainSecond = data[10];
+        machineType = data[2];
+        keypadData = data[3];
+        cycleType = data[4];
+        commandToReader = data[5];
+        machineStatus = data[6] * 0x100 + data[7];
+        remainMinute = data[10];
+        remainSecond = data[11];
     }
 }

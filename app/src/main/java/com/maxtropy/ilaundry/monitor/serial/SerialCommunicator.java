@@ -9,6 +9,7 @@ import com.maxtropy.ilaundry.monitor.Const;
 import com.maxtropy.ilaundry.monitor.model.SerialPacket;
 
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.TooManyListenersException;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -34,6 +35,10 @@ public class SerialCommunicator {
     private static final int ACTION_RESTART_PORT = 0x02;
     private static final int ACTION_SEND_REQUEST = 0x03;
     private static final int ACTION_RECEIVE_RESPONSE = 0x04;
+
+    private static final byte ACK = 0x06;
+    private static final byte NAK = 0x15;
+    private static final byte INV = 0x09;
 
     private static SerialCommunicator mInstance = new SerialCommunicator();
 
@@ -81,7 +86,7 @@ public class SerialCommunicator {
         }
     };
 
-    void setResponseListener(SerialResponseListener responseListener) {
+    public void setResponseListener(SerialResponseListener responseListener) {
         if(responseListenerAssignedFlag)
             Log.w(Const.TAG, "ResponseListener has been assigned.");
         responseListenerAssignedFlag = true;
@@ -158,11 +163,7 @@ public class SerialCommunicator {
             try {
                 isPortOpened = true;
                 mPort.addEventListener(mListener);
-                /*
-                byte[] data = new byte[]{0x02, 0x02, 0x10, 0x00, 0x10};
-                mPort.getOutputStream().write(data);
-                mPort.getOutputStream().flush();
-                */
+                // sendTestPacket();
                 Log.i(Const.TAG, "port " + COMMAND_PORT + " opened");
             } catch (TooManyListenersException e) {
                 e.printStackTrace();
@@ -171,6 +172,17 @@ public class SerialCommunicator {
                 e.printStackTrace();
             }
         }
+    }
+
+    void sendTestPacket() throws IOException {
+        byte[] data = new byte[]{0x02, 0x02, 0x10, 0x00, 0x10};
+        mPort.getOutputStream().write(data);
+        mPort.getOutputStream().flush();
+    }
+
+    private void sendControl(byte ctrl) {
+        byte[] buffer = new byte[]{ctrl};
+        writeDataToBuffer(buffer);
     }
 
     /**
@@ -204,7 +216,6 @@ public class SerialCommunicator {
         currentServingThread = callingThread;
         lastReq = req;
         sendPacket();
-        /*
         synchronized (callingThread) {
             try {
                 Log.d(Const.TAG, "lock");
@@ -214,7 +225,6 @@ public class SerialCommunicator {
                 return false;
             }
         }
-        */
         return true;
     }
 
@@ -256,6 +266,59 @@ public class SerialCommunicator {
         // restart();
     }
 
+    void wakeThread() {
+        synchronized (currentServingThread) {
+            waitResponseCode = 0x00;
+            Log.d(Const.TAG, "notify");
+            currentServingThread.notify();
+            currentServingThread = null;
+        }
+    }
+
+    ArrayDeque<Byte> buff = new ArrayDeque<>();
+
+    void onMessageArrives(byte[] rawMsg) {
+        Log.d(Const.TAG, "Message arrives: " + bufferToStr(rawMsg));
+        mHandler.removeCallbacks(timeoutRunnable);
+        retryTimes = 0;
+        if(rawMsg.length == 1) {
+            switch(rawMsg[0]) {
+                case ACK:
+                    // ACK: 唤醒business logic线程，令其可以继续逻辑或者释放锁
+                    retryTimes = 0;
+                    if(waitResponseCode == 0x00) {
+                        wakeThread();
+                    }
+                    break;
+                case NAK:
+                    // NAK
+                    Log.w(Const.TAG, "NAK : " + lastReq.getTag());
+                    sendPacket();
+                    break;
+                case INV:
+                    // INV
+                    Log.w(Const.TAG, "INV : " + lastReq.getTag());
+                    sendPacket();
+                    break;
+            }
+            return;
+        }
+        // TODO 没有判断包与包之间超时，即waitResponse有可能导致死锁
+        // 收到完整包
+        final SerialPacket res = new SerialPacket(rawMsg);
+        if(!res.isValid()) {
+            sendControl(INV);
+            return;
+        }
+        sendControl(ACK);
+        mHandler.obtainMessage(ACTION_RECEIVE_RESPONSE, res).sendToTarget();
+        if(waitResponseCode == res.getData()[1]) {
+            wakeThread();
+        } else if(waitResponseCode != 0x00)
+            Log.w(Const.TAG, "Wait response code mismatch: " + waitResponseCode + " : " + res.getData()[1]);
+    }
+
+
     private SerialPortEventListener mListener = new SerialPortEventListener() {
         @Override
         public void serialEvent(SerialPortEvent serialPortEvent) {
@@ -271,43 +334,36 @@ public class SerialCommunicator {
                     if (n != buffer.length) {
                         onError("Read buffer size: " + n + " is not equal to available length: " + buffer.length);
                     }
-                    // TODO 包也许没有完整传送
-                    mHandler.removeCallbacks(timeoutRunnable);
-                    retryTimes = 0;
-                    if(buffer.length == 1) {
-                        switch(buffer[0]) {
-                            case 0x06:
-                                // ACK: 唤醒business logic线程，令其可以继续逻辑或者释放锁
-                                retryTimes = 0;
-                                if(waitResponseCode == 0x00) {
-                                    // currentServingThread.notify();
-                                    currentServingThread = null;
-                                }
+                    String tmps = "data:";
+                    for(int i =0; i < n; ++i)
+                        tmps += " " + buffer[i];
+                    Log.d(Const.TAG, tmps);
+                    for(int i = 0; i < n; ++i)
+                        buff.addLast(buffer[i]);
+                    while(!buff.isEmpty()) {
+                        byte head = buff.getFirst();
+                        if(head == ACK || head == NAK || head == INV) {
+                            buffer = new byte[1];
+                            buffer[0] = buff.pollFirst();
+                            onMessageArrives(buffer);
+                        } else if(head == 0x02) {
+                            if (buff.size() > 1) {
+                                Byte tmp = buff.pollFirst();
+                                byte len = buff.peekFirst();
+                                buff.addFirst(tmp);
+                                if (buff.size() >= len + 3) {
+                                    buffer = new byte[len + 3];
+                                    for (int i = 0; i < len + 3; ++i)
+                                        buffer[i] = buff.pollFirst();
+                                    onMessageArrives(buffer);
+                                } else
+                                    break;
+                            } else
                                 break;
-                            case 0x15:
-                                // NAK
-                                Log.w(Const.TAG, "NAK : " + lastReq.getTag());
-                                sendPacket();
-                                break;
-                            case 0x09:
-                                // INV
-                                Log.w(Const.TAG, "INV : " + lastReq.getTag());
-                                sendPacket();
-                                break;
+                        } else {
+                            Log.e(Const.TAG, "INVALID CONTROL: " + buff.pollFirst());
+                            sendControl(INV);
                         }
-                        return;
-                    }
-                    // TODO 没有判断包与包之间超时，即waitResponse有可能导致死锁
-                    // 收到完整包
-                    final SerialPacket res = new SerialPacket(buffer);
-                    if(!res.isValid()) {
-                        return;
-                    }
-                    mHandler.obtainMessage(ACTION_RECEIVE_RESPONSE, res).sendToTarget();
-                    if(waitResponseCode == res.getData()[2]) {
-                        waitResponseCode = 0x00;
-                        // currentServingThread.notify();
-                        currentServingThread = null;
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -319,6 +375,15 @@ public class SerialCommunicator {
     void onTimeOut() {
         // TODO no resend mechanism enforced
         // restart();
+        sendControl(NAK);
+    }
+
+    String bufferToStr(byte[] buf) {
+        String tmp = "";
+        for(int i = 0; i < buf.length; ++i) {
+            tmp += buf[i] + " ";
+        }
+        return tmp;
     }
 
 }
