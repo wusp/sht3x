@@ -99,9 +99,9 @@ public class SerialService implements SerialResponseListener {
     public void onResponse(SerialPacket msg) {
         // On serial message received
         byte[] data = msg.getData();
-        switch(data[1]) {
+        switch(data[2]) {
             case MachineStatusPacket.code:
-                Log.d(Const.TAG, "Machine status received");
+                Log.d(Const.TAG, "<< Machine status received");
                 machineStatus = new MachineStatusPacket(msg);
                 onStatusUpdate(machineStatus);
                 break;

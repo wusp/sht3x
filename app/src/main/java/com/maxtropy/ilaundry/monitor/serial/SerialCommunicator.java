@@ -181,6 +181,17 @@ public class SerialCommunicator {
     }
 
     private void sendControl(byte ctrl) {
+        switch(ctrl) {
+            case ACK:
+                Log.d(Const.TAG, ">> ACK");
+                break;
+            case NAK:
+                Log.d(Const.TAG, ">> NAK");
+                break;
+            case INV:
+                Log.d(Const.TAG, ">> INV");
+                break;
+        }
         byte[] buffer = new byte[]{ctrl};
         writeDataToBuffer(buffer);
     }
@@ -194,6 +205,7 @@ public class SerialCommunicator {
             return;
         }
         retryTimes ++;
+        Log.d(Const.TAG, ">> " + lastReq.getClass().getSimpleName() + " : " + bufferToStr(lastReq.getData()));
         writeDataToBuffer(lastReq.toBytes());
         mHandler.postDelayed(timeoutRunnable, REQUEST_TIME_OUT);
     }
@@ -236,10 +248,6 @@ public class SerialCommunicator {
     private void writeDataToBuffer(byte[] data) {
         if (data == null)
             return;
-        String tmp = "Send msg: ";
-        for (byte b : data)
-            tmp += b + " ";
-        Log.d(Const.TAG, tmp);
         try {
             if(mPort.getOutputStream() == null) {
                 Log.e(Const.TAG, "no output stream");
@@ -278,13 +286,13 @@ public class SerialCommunicator {
     ArrayDeque<Byte> buff = new ArrayDeque<>();
 
     void onMessageArrives(byte[] rawMsg) {
-        Log.d(Const.TAG, "Message arrives: " + bufferToStr(rawMsg));
         mHandler.removeCallbacks(timeoutRunnable);
         retryTimes = 0;
         if(rawMsg.length == 1) {
             switch(rawMsg[0]) {
                 case ACK:
                     // ACK: 唤醒business logic线程，令其可以继续逻辑或者释放锁
+                    Log.d(Const.TAG, "<< ACK");
                     retryTimes = 0;
                     if(waitResponseCode == 0x00) {
                         wakeThread();
@@ -292,12 +300,12 @@ public class SerialCommunicator {
                     break;
                 case NAK:
                     // NAK
-                    Log.w(Const.TAG, "NAK : " + lastReq.getTag());
+                    Log.w(Const.TAG, "<< NAK : " + lastReq.getTag());
                     sendPacket();
                     break;
                 case INV:
                     // INV
-                    Log.w(Const.TAG, "INV : " + lastReq.getTag());
+                    Log.w(Const.TAG, "<< INV : " + lastReq.getTag());
                     sendPacket();
                     break;
             }
@@ -327,14 +335,13 @@ public class SerialCommunicator {
             }
             if (serialPortEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
                 try {
-                    Log.d(Const.TAG, "Data_Available. " + mPort.getInputStream().available());
                     byte[] buffer;
                     buffer = new byte[mPort.getInputStream().available()];
                     int n = mPort.getInputStream().read(buffer);
                     if (n != buffer.length) {
                         onError("Read buffer size: " + n + " is not equal to available length: " + buffer.length);
                     }
-                    String tmps = "data:";
+                    String tmps = "<< data:";
                     for(int i =0; i < n; ++i)
                         tmps += " " + buffer[i];
                     Log.d(Const.TAG, tmps);
