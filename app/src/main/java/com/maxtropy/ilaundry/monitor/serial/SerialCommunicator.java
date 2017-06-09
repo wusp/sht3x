@@ -6,7 +6,7 @@ import android.os.Message;
 import android.util.Log;
 
 import com.maxtropy.ilaundry.monitor.Const;
-import com.maxtropy.ilaundry.monitor.model.SerialPacket;
+import com.maxtropy.ilaundry.monitor.serial.model.SerialPacket;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
@@ -172,6 +172,10 @@ public class SerialCommunicator {
                 e.printStackTrace();
             }
         }
+    }
+
+    public boolean isReady() {
+        return !(mPort == null || !canWrite || !isPortOpened);
     }
 
     void sendTestPacket() throws IOException {

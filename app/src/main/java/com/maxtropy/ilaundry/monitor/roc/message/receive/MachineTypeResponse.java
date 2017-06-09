@@ -1,4 +1,4 @@
-package com.maxtropy.ilaundry.monitor.message.receive;
+package com.maxtropy.ilaundry.monitor.roc.message.receive;
 
 import com.maxtropy.mockingbirds.annotation.MessageKey;
 import com.maxtropy.mockingbirds.annotation.MessageType;
@@ -18,11 +18,15 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-@MessageType(subType = WashRequest.SUB_TYPE, type = MessageConstV2.TYPE_REQUEST)
-public class WashRequest extends AbstractMessageV2 {
+@MessageType(subType = MachineTypeResponse.SUB_TYPE, type = MessageConstV2.TYPE_REQUEST)
+public class MachineTypeResponse extends AbstractMessageV2 {
 
-    public static final int SUB_TYPE = 0x499101;
+    public static final int SUB_TYPE = 0x499107;
 
     @MessageKey(1)
-    private String mode;
+    private int machineType;
+
+    @MessageKey(2)
+    private int systemType;
+
 }

@@ -3,7 +3,7 @@ package com.maxtropy.ilaundry.monitor.roc.consumer;
 import android.util.Log;
 
 import com.maxtropy.ilaundry.monitor.Const;
-import com.maxtropy.ilaundry.monitor.message.receive.TestToBoxMessage;
+import com.maxtropy.ilaundry.monitor.roc.message.receive.TestToBoxMessage;
 import com.maxtropy.mockingbirds.protocol.MessageAnnotationRegistry;
 import com.maxtropy.roc.IMessageConsumer;
 import com.maxtropy.roc.RocChannel;

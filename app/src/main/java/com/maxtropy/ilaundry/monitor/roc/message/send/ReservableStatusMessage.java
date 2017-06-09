@@ -1,14 +1,9 @@
-package com.maxtropy.ilaundry.monitor.message.send;
+package com.maxtropy.ilaundry.monitor.roc.message.send;
 
 import com.maxtropy.mockingbirds.annotation.MessageKey;
 import com.maxtropy.mockingbirds.annotation.MessageType;
 import com.maxtropy.mockingbirds.protocol.AbstractMessageV2;
 import com.maxtropy.mockingbirds.protocol.MessageConstV2;
-
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
 
 /**
  * 可预约状态修改报文

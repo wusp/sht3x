@@ -1,4 +1,4 @@
-package com.maxtropy.ilaundry.monitor.message.send;
+package com.maxtropy.ilaundry.monitor.roc.message.send;
 
 import com.maxtropy.mockingbirds.annotation.MessageKey;
 import com.maxtropy.mockingbirds.annotation.MessageType;

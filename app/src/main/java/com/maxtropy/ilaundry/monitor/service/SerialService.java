@@ -4,17 +4,17 @@ package com.maxtropy.ilaundry.monitor.service;
 import android.util.Log;
 
 import com.maxtropy.ilaundry.monitor.Const;
-import com.maxtropy.ilaundry.monitor.message.send.RemainTimeMessage;
-import com.maxtropy.ilaundry.monitor.message.send.WasherErrorMessage;
-import com.maxtropy.ilaundry.monitor.model.receive.MachineStatusPacket;
-import com.maxtropy.ilaundry.monitor.model.SerialPacket;
-import com.maxtropy.ilaundry.monitor.model.send.CardInsertedPacket;
-import com.maxtropy.ilaundry.monitor.model.send.CardRemovedPacket;
-import com.maxtropy.ilaundry.monitor.model.send.CashCardRemovedPacket;
-import com.maxtropy.ilaundry.monitor.model.send.MachineStartPacket;
-import com.maxtropy.ilaundry.monitor.model.send.StatusRequestPacket;
-import com.maxtropy.ilaundry.monitor.model.send.TumblerProgrammingDataPacket;
-import com.maxtropy.ilaundry.monitor.model.send.VendPricePacket;
+import com.maxtropy.ilaundry.monitor.roc.message.send.RemainTimeMessage;
+import com.maxtropy.ilaundry.monitor.roc.message.send.WasherErrorMessage;
+import com.maxtropy.ilaundry.monitor.serial.model.receive.MachineStatusPacket;
+import com.maxtropy.ilaundry.monitor.serial.model.SerialPacket;
+import com.maxtropy.ilaundry.monitor.serial.model.send.CardInsertedPacket;
+import com.maxtropy.ilaundry.monitor.serial.model.send.CardRemovedPacket;
+import com.maxtropy.ilaundry.monitor.serial.model.send.CashCardRemovedPacket;
+import com.maxtropy.ilaundry.monitor.serial.model.send.MachineStartPacket;
+import com.maxtropy.ilaundry.monitor.serial.model.send.StatusRequestPacket;
+import com.maxtropy.ilaundry.monitor.serial.model.send.TumblerProgrammingDataPacket;
+import com.maxtropy.ilaundry.monitor.serial.model.send.VendPricePacket;
 import com.maxtropy.ilaundry.monitor.roc.Roc;
 import com.maxtropy.ilaundry.monitor.serial.SerialCommunicator;
 import com.maxtropy.ilaundry.monitor.serial.SerialResponseListener;
@@ -111,6 +111,10 @@ public class SerialService implements SerialResponseListener {
     @Override
     public void onError(String reason) {
         Roc.getInstance().sendMessage(new WasherErrorMessage(reason));
+    }
+
+    public boolean isReady() {
+        return serial.isReady();
     }
 
     synchronized void onStatusUpdate(MachineStatusPacket status) {

@@ -1,6 +1,6 @@
 package com.maxtropy.ilaundry.monitor.serial;
 
-import com.maxtropy.ilaundry.monitor.model.SerialPacket;
+import com.maxtropy.ilaundry.monitor.serial.model.SerialPacket;
 
 /**
  * Created by wusp on 2017/4/28.

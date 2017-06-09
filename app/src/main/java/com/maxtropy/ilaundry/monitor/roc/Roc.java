@@ -9,8 +9,11 @@ import android.util.Log;
 
 import com.maxtropy.ilaundry.monitor.Const;
 import com.maxtropy.ilaundry.monitor.R;
+import com.maxtropy.ilaundry.monitor.roc.consumer.MachineTypeConsumer;
 import com.maxtropy.ilaundry.monitor.roc.consumer.TestToBoxConsumer;
 import com.maxtropy.ilaundry.monitor.roc.consumer.WashRequestConsumer;
+import com.maxtropy.ilaundry.monitor.roc.message.receive.MachineTypeResponse;
+import com.maxtropy.ilaundry.monitor.roc.message.send.MachineTypeRequest;
 import com.maxtropy.ilaundry.monitor.service.SerialService;
 import com.maxtropy.mockingbirds.protocol.IMessageV2;
 import com.maxtropy.roc.RocChannel;
@@ -63,10 +66,18 @@ public class Roc {
         rocMessageReceiver = new RocMessageReceiver();
         rocMessageReceiver.addConsumer(new TestToBoxConsumer());
         rocMessageReceiver.addConsumer(new WashRequestConsumer(this));
+        rocMessageReceiver.addConsumer(new MachineTypeConsumer());
         rocBinder = new ServiceBinder(context, rocMessageReceiver);
         appDescriptor = context.getResources().getString(R.string.app_name);
         rocChannel = bindRocService(appDescriptor, ServerId.OTHER, rocBinder);
         cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        initCommands();
+    }
+
+    // TODO 随程序而定，不是ROC层的东西不过偷懒写在这里了
+    // 更好的实现是把ROC用ROCService包一层，上层实现建立ROC连接后的初始化逻辑
+    void initCommands() {
+        sendMessage(new MachineTypeRequest());
     }
 
     /**

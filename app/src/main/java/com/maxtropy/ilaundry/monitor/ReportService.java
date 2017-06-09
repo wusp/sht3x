@@ -13,6 +13,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.maxtropy.ilaundry.monitor.roc.Roc;
+import com.maxtropy.ilaundry.monitor.roc.message.receive.MachineTypeResponse;
 import com.maxtropy.ilaundry.monitor.serial.SerialCommunicator;
 import com.maxtropy.ilaundry.monitor.service.MachineStatusCronService;
 import com.maxtropy.ilaundry.monitor.service.SerialService;

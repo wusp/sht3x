@@ -6,10 +6,8 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.maxtropy.ilaundry.monitor.Const;
-import com.maxtropy.ilaundry.monitor.message.send.MonitorReportMessage;
-import com.maxtropy.ilaundry.monitor.model.receive.MachineStatusPacket;
-import com.maxtropy.ilaundry.monitor.roc.Roc;
-import com.softwinner.Gpio;
+import com.maxtropy.ilaundry.monitor.Global;
+import com.maxtropy.ilaundry.monitor.serial.model.receive.MachineStatusPacket;
 
 import java.util.Random;
 
@@ -23,14 +21,13 @@ public class MachineStatusCronService extends BroadcastReceiver {
 
     SerialService serial = SerialService.getInstance();
 
-    private MonitorReportMessage prev = new MonitorReportMessage("Maxtropy", "", "", "", "", "", 2, 2);
-    private MonitorReportMessage report;
     private Context app;
     private Random ran = new Random(System.currentTimeMillis());
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.d(Const.TAG, "Receive intent action on MachineStatusCronService: " + intent.getAction());
+        if(!Global.initialized() || !serial.isReady())
+            return;
         app = context.getApplicationContext();
         MachineStatusPacket machineStatus = serial.getMachineStatus();
         if(machineStatus == null) {
@@ -50,6 +47,7 @@ public class MachineStatusCronService extends BroadcastReceiver {
         */
     }
 
+    /*
     private void preparedToSend() {
         int opened = Gpio.readRaw(Const.PATH_DOOR_SWITCHER);
         if (opened > 1 || opened < 0) {
@@ -62,5 +60,6 @@ public class MachineStatusCronService extends BroadcastReceiver {
         Roc.getInstance(app).sendMessage(report);
         prev = report;
     }
+    */
 
 }

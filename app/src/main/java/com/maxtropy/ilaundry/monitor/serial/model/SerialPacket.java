@@ -1,4 +1,4 @@
-package com.maxtropy.ilaundry.monitor.model;
+package com.maxtropy.ilaundry.monitor.serial.model;
 
 /**
  * Created by Gerald on 6/2/2017.
