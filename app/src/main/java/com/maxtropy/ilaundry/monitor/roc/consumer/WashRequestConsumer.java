@@ -32,7 +32,7 @@ public class WashRequestConsumer implements IMessageConsumer {
                 return;
             }
             Log.d(Const.TAG, "[washRequest] " + response.getMode());
-            SerialService.getInstance().initiateWechatWash(Integer.valueOf(response.getMode()));
+            SerialService.getInstance().initiateWechatWash(response.getMode(), response.getPrice());
         } catch (Exception e) {
             e.printStackTrace();
         }

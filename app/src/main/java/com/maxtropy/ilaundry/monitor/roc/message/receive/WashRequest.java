@@ -24,5 +24,8 @@ public class WashRequest extends AbstractMessageV2 {
     public static final int SUB_TYPE = 0x499101;
 
     @MessageKey(1)
-    private String mode;
+    private int mode;
+
+    @MessageKey(2)
+    private int price;
 }

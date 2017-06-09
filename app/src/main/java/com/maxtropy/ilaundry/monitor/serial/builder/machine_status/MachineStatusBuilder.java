@@ -1,4 +1,4 @@
-package com.maxtropy.ilaundry.monitor.serial.builder;
+package com.maxtropy.ilaundry.monitor.serial.builder.machine_status;
 
 import com.maxtropy.ilaundry.monitor.Global;
 import com.maxtropy.ilaundry.monitor.serial.model.SerialPacket;
@@ -10,15 +10,15 @@ import com.maxtropy.ilaundry.monitor.serial.model.receive.MachineStatusPacket;
 
 public abstract class MachineStatusBuilder {
 
-    public static MachineStatusBuilder getBuilder() {
+    public static MachineStatusPacket build(SerialPacket packet) {
         switch(Global.systemType) {
             case MDC:
-                return new MDCMachineStatusBuilder();
+                return new MDCMachineStatusBuilder().doBuild(packet);
             case Centurion:
-                return new CenturionMachineStatusBuilder();
+                return new CenturionMachineStatusBuilder().doBuild(packet);
         }
         return null;
     }
 
-    public abstract MachineStatusPacket build(SerialPacket packet);
+    public abstract MachineStatusPacket doBuild(SerialPacket packet);
 }

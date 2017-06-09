@@ -1,4 +1,4 @@
-package com.maxtropy.ilaundry.monitor.serial.builder;
+package com.maxtropy.ilaundry.monitor.serial.builder.machine_status;
 
 import com.maxtropy.ilaundry.monitor.serial.model.SerialPacket;
 import com.maxtropy.ilaundry.monitor.serial.model.receive.MachineStatusPacket;
@@ -10,7 +10,7 @@ import com.maxtropy.ilaundry.monitor.serial.model.receive.MachineStatusPacket;
 public class MDCMachineStatusBuilder extends MachineStatusBuilder {
 
     @Override
-    public MachineStatusPacket build(SerialPacket packet) {
+    public MachineStatusPacket doBuild(SerialPacket packet) {
         MachineStatusPacket res = new MachineStatusPacket();
         byte[] data = packet.getData();
         res.setMachineType(data[3]);
