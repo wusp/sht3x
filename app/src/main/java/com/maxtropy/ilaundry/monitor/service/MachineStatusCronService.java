@@ -37,11 +37,6 @@ public class MachineStatusCronService extends BroadcastReceiver {
             Log.w(Const.TAG, "Not able to get machine status");
             return;
         }
-        Log.d(Const.TAG, "Machine status received.");
-        String tmp = "";
-        for(byte b : machineStatus.getData())
-            tmp += b + " ";
-        Log.d(Const.TAG, tmp);
         /*
         SerialCommunicator.getInstance();
         preparedToSend();
