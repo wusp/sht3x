@@ -7,6 +7,8 @@ import android.util.Log;
 
 import com.maxtropy.ilaundry.monitor.Const;
 import com.maxtropy.ilaundry.monitor.Global;
+import com.maxtropy.ilaundry.monitor.roc.Roc;
+import com.maxtropy.ilaundry.monitor.roc.message.send.MachineTypeRequest;
 import com.maxtropy.ilaundry.monitor.serial.model.receive.MachineStatusPacket;
 
 import java.util.Random;
@@ -23,11 +25,17 @@ public class MachineStatusCronService extends BroadcastReceiver {
 
     private Context app;
     private Random ran = new Random(System.currentTimeMillis());
+    Roc roc;
+
+    public MachineStatusCronService() {
+        roc = Roc.getInstance();
+    }
 
     @Override
     public void onReceive(Context context, Intent intent) {
         if(!Global.initialized() || !serial.isReady())
             return;
+        roc.sendMessage(new MachineTypeRequest());
         app = context.getApplicationContext();
         MachineStatusPacket machineStatus = serial.getMachineStatus();
         if(machineStatus == null) {

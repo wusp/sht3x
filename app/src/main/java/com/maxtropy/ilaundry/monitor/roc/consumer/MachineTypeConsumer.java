@@ -25,6 +25,7 @@ public class MachineTypeConsumer implements IMessageConsumer {
     @Override
     public void consume(MessageData data, RocChannel rocChannel) {
         try {
+            Log.d(Const.TAG, "[ROC] << machine type");
             final MachineTypeResponse response = MessageAnnotationRegistry.getInstance().fromData(data.getMessageV2(), MachineTypeResponse.class);
             if(response == null) {
                 Log.d(Const.TAG, "[washRequest] null");
