@@ -58,7 +58,7 @@ public class ReportService extends Service {
         Intent i = new Intent(this, MachineStatusCronService.class);
         alarmIntent = PendingIntent.getBroadcast(this, 0, i, 0);
         // am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + Utils.nextUploadTimeGap(), 300 * 1000, alarmIntent);
-        am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 2000, alarmIntent);
+        am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 500, alarmIntent);
         serial = SerialService.getInstance();
         return START_STICKY;
     }

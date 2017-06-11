@@ -9,6 +9,7 @@ import com.maxtropy.ilaundry.monitor.Const;
 import com.maxtropy.ilaundry.monitor.Global;
 import com.maxtropy.ilaundry.monitor.roc.Roc;
 import com.maxtropy.ilaundry.monitor.roc.message.send.MachineTypeRequest;
+import com.maxtropy.ilaundry.monitor.roc.message.send.ReservableStatusMessage;
 import com.maxtropy.ilaundry.monitor.serial.model.receive.MachineStatusPacket;
 
 import java.util.Random;
@@ -35,8 +36,11 @@ public class MachineStatusCronService extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         if(!Global.initialized() || !serial.isReady())
             return;
-        roc.sendMessage(new MachineTypeRequest());
-        app = context.getApplicationContext();
+        if(!Global.initialized()) {
+            roc.sendMessage(new MachineTypeRequest());
+            return;
+        }
+        // app = context.getApplicationContext();
         MachineStatusPacket machineStatus = serial.getMachineStatus();
         if(machineStatus == null) {
             Log.w(Const.TAG, "Not able to get machine status");
@@ -50,8 +54,6 @@ public class MachineStatusCronService extends BroadcastReceiver {
         report = new MonitorReportMessage();   //the new data report.
         Roc.getInstance(app).sendMessage(report);
 
-        ReservableStatusMessage rsvMsg = new ReservableStatusMessage(1);
-        Roc.getInstance(app).sendMessage(rsvMsg);
         */
     }
 

@@ -80,21 +80,28 @@ public class SerialService implements SerialResponseListener {
     }
 
     public void initiateWechatWash(int cycle, int price) {
-        insertCard();
-        // getMachineStatus();
-        sendSingleRequest(new ToploadProgrammingDataPacket(cycle));
-        /*
-        removeCard();
-        getMachineStatus();
-        */
-        sendSingleRequest(new CardInsertedPacket(11, 88));
-        sendSingleRequest(new AudioBeepRequest(4));
+        try {
+            insertCard();
+            getMachineStatus();
+            Thread.sleep(500);
+            sendSingleRequest(new ToploadProgrammingDataPacket(cycle));
+            removeCard();
+            getMachineStatus();
+            Thread.sleep(500);
+            insertCard();
+            getMachineStatus();
+            Thread.sleep(500);
+            sendSingleRequest(new CardInsertedPacket(5000, 100));
+            sendSingleRequest(new AudioBeepRequest(4));
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void sendSingleRequest(SerialPacket msg) {
         serial.lock();
         try {
-            if(msg.getTag() == TumblerProgrammingDataPacket.class.getName())
+            if(msg.getTag() == ToploadProgrammingDataPacket.class.getName())
                 programming = true;
             if(msg.getTag() == CardRemovedPacket.class.getName())
                 programming = false;

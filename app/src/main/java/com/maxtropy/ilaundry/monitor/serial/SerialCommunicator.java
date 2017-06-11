@@ -234,7 +234,7 @@ public class SerialCommunicator {
         sendPacket();
         synchronized (callingThread) {
             try {
-                Log.d(Const.TAG, "lock");
+                Log.v(Const.TAG, "lock");
                 callingThread.wait();
             } catch(InterruptedException e) {
                 e.printStackTrace();
@@ -281,7 +281,7 @@ public class SerialCommunicator {
     void wakeThread() {
         synchronized (currentServingThread) {
             waitResponseCode = 0x00;
-            Log.d(Const.TAG, "notify");
+            Log.v(Const.TAG, "notify");
             currentServingThread.notify();
             currentServingThread = null;
         }
