@@ -392,7 +392,8 @@ public class SerialCommunicator {
     String bufferToStr(byte[] buf) {
         String tmp = "";
         for(int i = 0; i < buf.length; ++i) {
-            tmp += buf[i] + " ";
+            int anUnsignedByte = (int) buf[i] & 0xff;
+            tmp += anUnsignedByte + " ";
         }
         return tmp;
     }

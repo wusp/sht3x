@@ -9,6 +9,8 @@ import com.maxtropy.ilaundry.monitor.serial.SerialCommunicator;
 
 public class Global {
 
+    public final static byte TOP_OFF_TIME = 10;
+
     public enum MachineType {
         Undefined(0),
         TopLoadWasher(1),

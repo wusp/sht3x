@@ -9,15 +9,15 @@ import com.maxtropy.ilaundry.monitor.roc.message.send.WasherErrorMessage;
 import com.maxtropy.ilaundry.monitor.serial.builder.machine_status.MachineStatusBuilder;
 import com.maxtropy.ilaundry.monitor.serial.model.receive.MachineStatusPacket;
 import com.maxtropy.ilaundry.monitor.serial.model.SerialPacket;
+import com.maxtropy.ilaundry.monitor.serial.model.send.AddTimePacket;
 import com.maxtropy.ilaundry.monitor.serial.model.send.AudioBeepRequest;
 import com.maxtropy.ilaundry.monitor.serial.model.send.CardInsertedPacket;
+import com.maxtropy.ilaundry.monitor.serial.model.send.CardInsertedTopOffPacket;
 import com.maxtropy.ilaundry.monitor.serial.model.send.CardRemovedPacket;
 import com.maxtropy.ilaundry.monitor.serial.model.send.CashCardRemovedPacket;
 import com.maxtropy.ilaundry.monitor.serial.model.send.MachineStartPacket;
 import com.maxtropy.ilaundry.monitor.serial.model.send.StatusRequestPacket;
-import com.maxtropy.ilaundry.monitor.serial.model.send.ToploadProgrammingDataPacket;
-import com.maxtropy.ilaundry.monitor.serial.model.send.TumblerProgrammingDataPacket;
-import com.maxtropy.ilaundry.monitor.serial.model.send.VendPricePacket;
+import com.maxtropy.ilaundry.monitor.serial.model.send.ProgrammingDataPacket;
 import com.maxtropy.ilaundry.monitor.roc.Roc;
 import com.maxtropy.ilaundry.monitor.serial.SerialCommunicator;
 import com.maxtropy.ilaundry.monitor.serial.SerialResponseListener;
@@ -60,7 +60,7 @@ public class SerialService implements SerialResponseListener {
             // 发送完需要等待MachineStatusPacket返回
             serial.sendPacket(new StatusRequestPacket(cardInReader), Thread.currentThread(), MachineStartPacket.code);
             // 只需要等待ACK即可
-            serial.sendPacket(new TumblerProgrammingDataPacket(2), Thread.currentThread());
+            serial.sendPacket(new ProgrammingDataPacket(2), Thread.currentThread());
         } finally {
             serial.unlock();
         }
@@ -84,7 +84,7 @@ public class SerialService implements SerialResponseListener {
             insertCard();
             getMachineStatus();
             Thread.sleep(500);
-            sendSingleRequest(new ToploadProgrammingDataPacket(cycle));
+            sendSingleRequest(new ProgrammingDataPacket(cycle));
             removeCard();
             getMachineStatus();
             Thread.sleep(500);
@@ -98,10 +98,21 @@ public class SerialService implements SerialResponseListener {
         }
     }
 
+    public void additionalTime() {
+        try {
+            insertCard();
+            getMachineStatus();
+            Thread.sleep(500);
+            sendSingleRequest(new CardInsertedTopOffPacket());
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public void sendSingleRequest(SerialPacket msg) {
         serial.lock();
         try {
-            if(msg.getTag() == ToploadProgrammingDataPacket.class.getName())
+            if(msg.getTag() == ProgrammingDataPacket.class.getName())
                 programming = true;
             if(msg.getTag() == CardRemovedPacket.class.getName())
                 programming = false;
@@ -138,11 +149,19 @@ public class SerialService implements SerialResponseListener {
             onError("Error mode reported by washer");
             return;
         }
-        if(status.getCommandToReader() == 0x46) {
-            // TODO start washing
-            sendSingleRequest(new MachineStartPacket());
-            removeCard();
-            sendSingleRequest(new CashCardRemovedPacket(0, 0));
+        switch(status.getCommandToReader()) {
+            case 0x46:
+                // TODO start washing
+                sendSingleRequest(new MachineStartPacket());
+                removeCard();
+                sendSingleRequest(new CashCardRemovedPacket(1, 1));
+                break;
+            case 0x47:
+                // deduct topoff vend
+                sendSingleRequest(new AddTimePacket());
+                removeCard();
+                sendSingleRequest(new CashCardRemovedPacket(1, 1));
+                break;
         }
         if(status.isMode(5) && !doneNotified) {
             doneNotified = true;
