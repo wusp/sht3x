@@ -1,5 +1,6 @@
 package com.maxtropy.ilaundry.monitor.serial.model.send;
 
+import com.maxtropy.ilaundry.monitor.Global;
 import com.maxtropy.ilaundry.monitor.serial.model.SerialPacket;
 
 /**
@@ -14,4 +15,5 @@ public class MachineStartPacket extends SerialPacket {
         data = new byte[1];
         data[0] = code;
     }
+
 }

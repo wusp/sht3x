@@ -126,12 +126,10 @@ public class SerialService implements SerialResponseListener {
     public void onResponse(SerialPacket msg) {
         // On serial message received
         byte[] data = msg.getData();
-        switch(data[2]) {
-            case MachineStatusPacket.code:
-                Log.d(Const.TAG, "<< Machine status received");
-                machineStatus = MachineStatusBuilder.build(msg);
-                onStatusUpdate(machineStatus);
-                break;
+        if(data[2] == MachineStartPacket.code) {
+            Log.d(Const.TAG, "<< Machine status received");
+            machineStatus = MachineStatusBuilder.build(msg);
+            onStatusUpdate(machineStatus);
         }
     }
 
