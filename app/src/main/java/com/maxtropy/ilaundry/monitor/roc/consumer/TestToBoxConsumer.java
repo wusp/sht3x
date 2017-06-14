@@ -1,5 +1,6 @@
 package com.maxtropy.ilaundry.monitor.roc.consumer;
 
+import android.filterfw.core.Program;
 import android.util.Log;
 
 import com.maxtropy.ilaundry.monitor.Const;
@@ -7,6 +8,7 @@ import com.maxtropy.ilaundry.monitor.roc.message.receive.TestToBoxMessage;
 import com.maxtropy.ilaundry.monitor.serial.model.send.CardInsertedPacket;
 import com.maxtropy.ilaundry.monitor.serial.model.send.CardRemovedPacket;
 import com.maxtropy.ilaundry.monitor.serial.model.send.CashCardRemovedPacket;
+import com.maxtropy.ilaundry.monitor.serial.model.send.ProgrammingDataPacket;
 import com.maxtropy.ilaundry.monitor.service.SerialService;
 import com.maxtropy.mockingbirds.protocol.MessageAnnotationRegistry;
 import com.maxtropy.roc.IMessageConsumer;
@@ -37,12 +39,19 @@ public class TestToBoxConsumer implements IMessageConsumer {
                 Log.d(Const.TAG, "[test to box message] null");
             }
             JSONObject json = new JSONObject(response.getTimestamp());
-            byte code = (byte)(json.getInt("code"));
-            if(code == CardInsertedPacket.code)
+            String packet = json.getString("packet");
+            if(packet == CardInsertedPacket.class.getSimpleName())
                 serial.sendSingleRequest(new CardInsertedPacket());
-            if(code == CashCardRemovedPacket.code) {
+            if(packet == CashCardRemovedPacket.class.getSimpleName()) {
                 serial.removeCard();
                 serial.sendSingleRequest(new CashCardRemovedPacket());
+            }
+            if(packet == CardRemovedPacket.class.getSimpleName()) {
+                serial.removeCard();
+                serial.sendSingleRequest(new CardRemovedPacket());
+            }
+            if(packet == ProgrammingDataPacket.class.getSimpleName()) {
+                serial.program(json.getInt("arg1"));
             }
 
         } catch (Exception e) {

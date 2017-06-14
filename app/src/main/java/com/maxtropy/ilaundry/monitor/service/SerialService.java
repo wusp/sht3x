@@ -90,7 +90,7 @@ public class SerialService implements SerialResponseListener {
         }
     }
 
-    public void initiateWechatWash(int cycle, int price) {
+    public void program(int cycle) {
         try {
             serial.lock();
             insertCard();
@@ -102,7 +102,17 @@ public class SerialService implements SerialResponseListener {
 
             serial.sendPacket(new StatusRequestPacket(cardInReader), Thread.currentThread(), MachineStatusPacket.code);
             serial.sendPacket(new VendPricePacket(), Thread.currentThread());
+        } catch(Exception e) {
+            e.printStackTrace();
+        } finally {
+            serial.unlock();
+        }
+    }
 
+    public void initiateWechatWash(int cycle, int price) {
+        try {
+            program(cycle);
+            serial.lock();
             insertCard();
             serial.sendPacket(new CardInsertedPacket(Global.vendPrice * 2, Global.vendPrice), Thread.currentThread());
             serial.sendPacket(new AudioBeepRequest(4), Thread.currentThread());
