@@ -34,13 +34,15 @@ public class Global {
         }
     }
 
-    /*
     public static MachineType machineType = MachineType.Undefined;
     public static SystemType systemType = SystemType.Undefined;
-    */
 
+    public static int vendPrice = 100;
+
+    /*
     public static MachineType machineType = MachineType.TopLoadWasher;
     public static SystemType systemType = SystemType.MDC;
+    */
 
     public static boolean initialized() {
         return machineType != MachineType.Undefined;

@@ -4,6 +4,7 @@ package com.maxtropy.ilaundry.monitor.service;
 import android.util.Log;
 
 import com.maxtropy.ilaundry.monitor.Const;
+import com.maxtropy.ilaundry.monitor.Global;
 import com.maxtropy.ilaundry.monitor.roc.message.send.RemainTimeMessage;
 import com.maxtropy.ilaundry.monitor.roc.message.send.WasherErrorMessage;
 import com.maxtropy.ilaundry.monitor.serial.builder.machine_status.MachineStatusBuilder;
@@ -21,6 +22,7 @@ import com.maxtropy.ilaundry.monitor.serial.model.send.ProgrammingDataPacket;
 import com.maxtropy.ilaundry.monitor.roc.Roc;
 import com.maxtropy.ilaundry.monitor.serial.SerialCommunicator;
 import com.maxtropy.ilaundry.monitor.serial.SerialResponseListener;
+import com.maxtropy.ilaundry.monitor.serial.model.send.VendPricePacket;
 
 /**
  * Created by Gerald on 6/3/2017.
@@ -75,26 +77,43 @@ public class SerialService implements SerialResponseListener {
     }
 
     public MachineStatusPacket getMachineStatus() {
-        sendSingleRequest(new StatusRequestPacket(cardInReader));
-        return machineStatus;
+        try {
+            serial.lock();
+            serial.sendPacket(new StatusRequestPacket(cardInReader), Thread.currentThread(), MachineStartPacket.code);
+            serial.sendPacket(new VendPricePacket(), Thread.currentThread());
+            return machineStatus;
+        } catch(Exception e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            serial.unlock();
+        }
     }
 
     public void initiateWechatWash(int cycle, int price) {
         try {
+            serial.lock();
+            /*
             insertCard();
-            getMachineStatus();
+            serial.sendPacket(new StatusRequestPacket(cardInReader), Thread.currentThread());
             Thread.sleep(500);
-            sendSingleRequest(new ProgrammingDataPacket(cycle));
+            serial.sendPacket(new ProgrammingDataPacket(cycle), Thread.currentThread());
+            Thread.sleep(500);
+            serial.sendPacket(new CardRemovedPacket(), Thread.currentThread());
+            Thread.sleep(200);
             removeCard();
-            getMachineStatus();
+            serial.sendPacket(new StatusRequestPacket(cardInReader), Thread.currentThread());
             Thread.sleep(500);
+            */
             insertCard();
-            getMachineStatus();
+            serial.sendPacket(new StatusRequestPacket(cardInReader), Thread.currentThread());
             Thread.sleep(500);
-            sendSingleRequest(new CardInsertedPacket(5000, 100));
-            sendSingleRequest(new AudioBeepRequest(4));
+            serial.sendPacket(new CardInsertedPacket(Global.vendPrice, Global.vendPrice), Thread.currentThread());
+            // serial.sendPacket(new AudioBeepRequest(4), Thread.currentThread());
         } catch(Exception e) {
             e.printStackTrace();
+        } finally {
+            serial.unlock();
         }
     }
 
@@ -126,7 +145,7 @@ public class SerialService implements SerialResponseListener {
     public void onResponse(SerialPacket msg) {
         // On serial message received
         byte[] data = msg.getData();
-        if(data[2] == MachineStartPacket.code) {
+        if(data[2] == MachineStatusPacket.code) {
             Log.d(Const.TAG, "<< Machine status received");
             machineStatus = MachineStatusBuilder.build(msg);
             onStatusUpdate(machineStatus);
@@ -152,13 +171,13 @@ public class SerialService implements SerialResponseListener {
                 // TODO start washing
                 sendSingleRequest(new MachineStartPacket());
                 removeCard();
-                sendSingleRequest(new CashCardRemovedPacket(1, 1));
+                sendSingleRequest(new CashCardRemovedPacket(0, Global.vendPrice));
                 break;
             case 0x47:
                 // deduct topoff vend
                 sendSingleRequest(new AddTimePacket());
                 removeCard();
-                sendSingleRequest(new CashCardRemovedPacket(1, 1));
+                sendSingleRequest(new CashCardRemovedPacket(0, Global.vendPrice));
                 break;
         }
         if(status.isMode(5) && !doneNotified) {

@@ -34,12 +34,12 @@ public class MachineStatusCronService extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if(!Global.initialized() || !serial.isReady())
-            return;
         if(!Global.initialized()) {
             roc.sendMessage(new MachineTypeRequest());
             return;
         }
+        if(!serial.isReady())
+            return;
         // app = context.getApplicationContext();
         MachineStatusPacket machineStatus = serial.getMachineStatus();
         if(machineStatus == null) {

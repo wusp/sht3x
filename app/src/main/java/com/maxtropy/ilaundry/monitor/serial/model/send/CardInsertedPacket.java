@@ -9,7 +9,15 @@ import com.maxtropy.ilaundry.monitor.serial.model.SerialPacket;
 public class CardInsertedPacket extends SerialPacket {
     public final static byte code = 0x40;
 
+    public CardInsertedPacket() {
+        init(5000, 100);
+    }
+
     public CardInsertedPacket(int cardBalance, int vendPrice) {
+        init(cardBalance, vendPrice);
+    }
+
+    void init(int cardBalance, int vendPrice) {
         tag = "cash valued card inserted packet";
         data = new byte[5];
         data[0] = code;
