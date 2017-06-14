@@ -211,6 +211,11 @@ public class SerialCommunicator {
         retryTimes ++;
         Log.d(Const.TAG, ">> " + lastReq.getClass().getSimpleName() + " : " + bufferToStr(lastReq.getData()));
         writeDataToBuffer(lastReq.toBytes());
+        try {
+            Thread.sleep(5);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
         mHandler.postDelayed(timeoutRunnable, REQUEST_TIME_OUT);
     }
 
@@ -324,10 +329,10 @@ public class SerialCommunicator {
         }
         sendControl(ACK);
         mHandler.obtainMessage(ACTION_RECEIVE_RESPONSE, res).sendToTarget();
-        if(waitResponseCode == res.getData()[1]) {
+        if(waitResponseCode == res.getData()[2]) {
             wakeThread();
         } else if(waitResponseCode != 0x00)
-            Log.w(Const.TAG, "Wait response code mismatch: " + waitResponseCode + " : " + res.getData()[1]);
+            Log.w(Const.TAG, "Wait response code mismatch: " + waitResponseCode + " : " + res.getData()[2]);
     }
 
 

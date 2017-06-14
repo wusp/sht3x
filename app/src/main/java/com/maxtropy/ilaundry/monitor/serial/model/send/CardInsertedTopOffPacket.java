@@ -11,7 +11,7 @@ public class CardInsertedTopOffPacket extends SerialPacket {
     public final static byte code = 0x42;
 
     public CardInsertedTopOffPacket() {
-        initalization(1, 1);
+        initalization(Global.vendPrice * 2, Global.vendPrice);
     }
 
     public CardInsertedTopOffPacket(int cardBalance, int vendPrice) {

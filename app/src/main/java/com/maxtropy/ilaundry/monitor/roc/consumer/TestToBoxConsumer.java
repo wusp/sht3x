@@ -6,6 +6,7 @@ import com.maxtropy.ilaundry.monitor.Const;
 import com.maxtropy.ilaundry.monitor.roc.message.receive.TestToBoxMessage;
 import com.maxtropy.ilaundry.monitor.serial.model.send.CardInsertedPacket;
 import com.maxtropy.ilaundry.monitor.serial.model.send.CardRemovedPacket;
+import com.maxtropy.ilaundry.monitor.serial.model.send.CashCardRemovedPacket;
 import com.maxtropy.ilaundry.monitor.service.SerialService;
 import com.maxtropy.mockingbirds.protocol.MessageAnnotationRegistry;
 import com.maxtropy.roc.IMessageConsumer;
@@ -39,6 +40,10 @@ public class TestToBoxConsumer implements IMessageConsumer {
             byte code = (byte)(json.getInt("code"));
             if(code == CardInsertedPacket.code)
                 serial.sendSingleRequest(new CardInsertedPacket());
+            if(code == CashCardRemovedPacket.code) {
+                serial.removeCard();
+                serial.sendSingleRequest(new CashCardRemovedPacket());
+            }
 
         } catch (Exception e) {
             e.printStackTrace();

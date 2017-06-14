@@ -60,7 +60,7 @@ public class SerialService implements SerialResponseListener {
         serial.lock();
         try {
             // 发送完需要等待MachineStatusPacket返回
-            serial.sendPacket(new StatusRequestPacket(cardInReader), Thread.currentThread(), MachineStartPacket.code);
+            serial.sendPacket(new StatusRequestPacket(cardInReader), Thread.currentThread(), MachineStatusPacket.code);
             // 只需要等待ACK即可
             serial.sendPacket(new ProgrammingDataPacket(2), Thread.currentThread());
         } finally {
@@ -68,18 +68,18 @@ public class SerialService implements SerialResponseListener {
         }
     }
 
-    void insertCard() {
+    public void insertCard() {
         cardInReader = true;
     }
 
-    void removeCard() {
+    public void removeCard() {
         cardInReader = false;
     }
 
     public MachineStatusPacket getMachineStatus() {
         try {
             serial.lock();
-            serial.sendPacket(new StatusRequestPacket(cardInReader), Thread.currentThread(), MachineStartPacket.code);
+            serial.sendPacket(new StatusRequestPacket(cardInReader), Thread.currentThread(), MachineStatusPacket.code);
             serial.sendPacket(new VendPricePacket(), Thread.currentThread());
             return machineStatus;
         } catch(Exception e) {
@@ -93,23 +93,19 @@ public class SerialService implements SerialResponseListener {
     public void initiateWechatWash(int cycle, int price) {
         try {
             serial.lock();
-            /*
             insertCard();
-            serial.sendPacket(new StatusRequestPacket(cardInReader), Thread.currentThread());
-            Thread.sleep(500);
             serial.sendPacket(new ProgrammingDataPacket(cycle), Thread.currentThread());
-            Thread.sleep(500);
+            Thread.sleep(2000);
+            removeCard();
             serial.sendPacket(new CardRemovedPacket(), Thread.currentThread());
             Thread.sleep(200);
-            removeCard();
-            serial.sendPacket(new StatusRequestPacket(cardInReader), Thread.currentThread());
-            Thread.sleep(500);
-            */
+
+            serial.sendPacket(new StatusRequestPacket(cardInReader), Thread.currentThread(), MachineStatusPacket.code);
+            serial.sendPacket(new VendPricePacket(), Thread.currentThread());
+
             insertCard();
-            serial.sendPacket(new StatusRequestPacket(cardInReader), Thread.currentThread());
-            Thread.sleep(500);
-            serial.sendPacket(new CardInsertedPacket(Global.vendPrice, Global.vendPrice), Thread.currentThread());
-            // serial.sendPacket(new AudioBeepRequest(4), Thread.currentThread());
+            serial.sendPacket(new CardInsertedPacket(Global.vendPrice * 2, Global.vendPrice), Thread.currentThread());
+            serial.sendPacket(new AudioBeepRequest(4), Thread.currentThread());
         } catch(Exception e) {
             e.printStackTrace();
         } finally {
@@ -171,13 +167,13 @@ public class SerialService implements SerialResponseListener {
                 // TODO start washing
                 sendSingleRequest(new MachineStartPacket());
                 removeCard();
-                sendSingleRequest(new CashCardRemovedPacket(0, Global.vendPrice));
+                sendSingleRequest(new CashCardRemovedPacket());
                 break;
             case 0x47:
                 // deduct topoff vend
                 sendSingleRequest(new AddTimePacket());
                 removeCard();
-                sendSingleRequest(new CashCardRemovedPacket(0, Global.vendPrice));
+                sendSingleRequest(new CashCardRemovedPacket());
                 break;
         }
         if(status.isMode(5) && !doneNotified) {

@@ -1,5 +1,6 @@
 package com.maxtropy.ilaundry.monitor.serial.model.send;
 
+import com.maxtropy.ilaundry.monitor.Global;
 import com.maxtropy.ilaundry.monitor.serial.model.SerialPacket;
 
 /**
@@ -9,7 +10,7 @@ import com.maxtropy.ilaundry.monitor.serial.model.SerialPacket;
 public class CashCardRemovedPacket extends SerialPacket {
     public final static byte code = 0x41;
 
-    public CashCardRemovedPacket(int cardBalance, int vendPrice) {
+    void init(int cardBalance, int vendPrice) {
         tag = "cash valued card inserted packet";
         data = new byte[5];
         data[0] = code;
@@ -18,4 +19,9 @@ public class CashCardRemovedPacket extends SerialPacket {
         data[3] = (byte)(vendPrice / 0x100);
         data[4] = (byte)(vendPrice % 0x100);
     }
+
+    public CashCardRemovedPacket() {
+        init(Global.vendPrice, Global.vendPrice);
+    }
+
 }

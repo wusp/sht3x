@@ -15,7 +15,8 @@ public class VendPricePacket extends SerialPacket {
         tag = "vend price";
         data = new byte[4];
         data[0] = getCode();
-        data[3] = 1;
+        putShort(1, Global.vendPrice);
+        data[3] = 0;
     }
 
     public byte getCode() {

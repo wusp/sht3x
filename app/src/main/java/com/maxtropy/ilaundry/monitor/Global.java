@@ -37,7 +37,7 @@ public class Global {
     public static MachineType machineType = MachineType.Undefined;
     public static SystemType systemType = SystemType.Undefined;
 
-    public static int vendPrice = 100;
+    public static int vendPrice = 4;
 
     /*
     public static MachineType machineType = MachineType.TopLoadWasher;

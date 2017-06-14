@@ -71,13 +71,6 @@ public class Roc {
         appDescriptor = context.getResources().getString(R.string.app_name);
         rocChannel = bindRocService(appDescriptor, ServerId.OTHER, rocBinder);
         cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        // initCommands();
-    }
-
-    // TODO 随程序而定，不是ROC层的东西不过偷懒写在这里了
-    // 更好的实现是把ROC用ROCService包一层，上层实现建立ROC连接后的初始化逻辑
-    void initCommands() {
-        sendMessage(new MachineTypeRequest());
     }
 
     /**
