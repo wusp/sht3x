@@ -13,8 +13,23 @@ import com.maxtropy.mockingbirds.protocol.MessageConstV2;
 public class ReservableStatusMessage extends AbstractMessageV2 {
     static final int SUB_TYPE = 0x499104;
     static final String topic = "ilaundry_device_resevable";
+    public enum Status{
+        available(0),
+        in_use(1),
+        offline(2),
+        error(3),
+        reserved(4);
+        int value;
+        Status(int value) {
+            this.value = value;
+        }
+    }
     @MessageKey(1)
     private int reservable;
+    public ReservableStatusMessage(Status status) {
+        this.reservable = status.value;
+        setTopic(topic);
+    }
     public ReservableStatusMessage(int reservable) {
         this.reservable = reservable;
         setTopic(topic);

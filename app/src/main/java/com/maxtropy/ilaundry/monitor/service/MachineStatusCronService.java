@@ -9,7 +9,6 @@ import com.maxtropy.ilaundry.monitor.Const;
 import com.maxtropy.ilaundry.monitor.Global;
 import com.maxtropy.ilaundry.monitor.roc.Roc;
 import com.maxtropy.ilaundry.monitor.roc.message.send.MachineTypeRequest;
-import com.maxtropy.ilaundry.monitor.roc.message.send.ReservableStatusMessage;
 import com.maxtropy.ilaundry.monitor.serial.model.receive.MachineStatusPacket;
 
 import java.util.Random;
