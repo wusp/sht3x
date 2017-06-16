@@ -125,6 +125,14 @@ public class SerialService implements SerialResponseListener {
         }
     }
 
+    public void initiateCoinWash() {
+        initiateWechatWash(2, Global.vendPrice);
+    }
+
+    public void initiateCardWash() {
+        initiateWechatWash(2, Global.vendPrice);
+    }
+
     public void additionalTime() {
         try {
             insertCard();
@@ -200,4 +208,5 @@ public class SerialService implements SerialResponseListener {
             roc.sendMessage(new RemainTimeMessage(remainSec));
         }
     }
+
 }
