@@ -19,7 +19,10 @@ import com.maxtropy.roc.model.MessageData;
 
 public class MachineTypeConsumer implements IMessageConsumer {
 
+    SerialService serial;
+
     public MachineTypeConsumer() {
+        serial = SerialService.getInstance();
     }
 
     @Override

@@ -184,6 +184,11 @@ public class SerialCommunicator {
         mPort.getOutputStream().flush();
     }
 
+    void resetTimeout() {
+        mHandler.removeCallbacks(timeoutRunnable);
+        mHandler.postDelayed(timeoutRunnable, REQUEST_TIME_OUT);
+    }
+
     private void sendControl(byte ctrl) {
         switch(ctrl) {
             case ACK:
@@ -197,6 +202,7 @@ public class SerialCommunicator {
                 break;
         }
         byte[] buffer = new byte[]{ctrl};
+        resetTimeout();
         writeDataToBuffer(buffer);
     }
 
@@ -211,12 +217,12 @@ public class SerialCommunicator {
         retryTimes ++;
         Log.d(Const.TAG, ">> " + lastReq.getClass().getSimpleName() + " : " + bufferToStr(lastReq.getData()));
         writeDataToBuffer(lastReq.toBytes());
+        resetTimeout();
         try {
             Thread.sleep(5);
         } catch(Exception e) {
             e.printStackTrace();
         }
-        mHandler.postDelayed(timeoutRunnable, REQUEST_TIME_OUT);
     }
 
     public boolean sendPacket(SerialPacket req, Thread callingThread) {
@@ -279,7 +285,7 @@ public class SerialCommunicator {
      */
     private void onError(String reason) {
         Log.e(Const.TAG, "Error: " + reason);
-        // responseListener.onError(reason);
+        responseListener.onError(reason);
         // restart();
     }
 
@@ -388,10 +394,15 @@ public class SerialCommunicator {
         }
     };
 
+    int nakCount = 0;
+
     void onTimeOut() {
         // TODO no resend mechanism enforced
         // restart();
-        sendControl(NAK);
+        if(++nakCount == 8)
+            onError("Timeout 8 times.");
+        else
+            sendControl(NAK);
     }
 
     String bufferToStr(byte[] buf) {

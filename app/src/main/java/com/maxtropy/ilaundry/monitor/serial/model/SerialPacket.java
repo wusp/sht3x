@@ -57,6 +57,12 @@ public class SerialPacket {
         return tag;
     }
 
+    public void putThree(int offset, int value) {
+        data[offset] = (byte)(value / 0x10000);
+        data[offset + 1] = (byte)(value % 0x10000 / 0x100);
+        data[offset + 2] = (byte)(value % 0x100);
+    }
+
     public void putShort(int offset, int value) {
         data[offset] = (byte)(value / 0x100);
         data[offset + 1] = (byte)(value % 0x100);

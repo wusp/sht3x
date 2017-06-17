@@ -39,6 +39,9 @@ public class Global {
 
     public static int vendPrice = 4;
 
+    public static int ManufacturerId = 0;
+    public static int FirmwareVersion = 0;
+
     /*
     public static MachineType machineType = MachineType.TopLoadWasher;
     public static SystemType systemType = SystemType.MDC;

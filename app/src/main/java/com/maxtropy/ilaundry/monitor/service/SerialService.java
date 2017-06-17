@@ -9,10 +9,12 @@ import com.maxtropy.ilaundry.monitor.roc.message.send.RemainTimeMessage;
 import com.maxtropy.ilaundry.monitor.roc.message.send.ReservableStatusMessage;
 import com.maxtropy.ilaundry.monitor.roc.message.send.WasherErrorMessage;
 import com.maxtropy.ilaundry.monitor.serial.builder.machine_status.MachineStatusBuilder;
+import com.maxtropy.ilaundry.monitor.serial.model.receive.MachineControlInitializationPacket;
 import com.maxtropy.ilaundry.monitor.serial.model.receive.MachineStatusPacket;
 import com.maxtropy.ilaundry.monitor.serial.model.SerialPacket;
 import com.maxtropy.ilaundry.monitor.serial.model.send.AddTimePacket;
 import com.maxtropy.ilaundry.monitor.serial.model.send.AudioBeepRequest;
+import com.maxtropy.ilaundry.monitor.serial.model.send.CardInitializationPacket;
 import com.maxtropy.ilaundry.monitor.serial.model.send.CardInsertedPacket;
 import com.maxtropy.ilaundry.monitor.serial.model.send.CardInsertedTopOffPacket;
 import com.maxtropy.ilaundry.monitor.serial.model.send.CardRemovedPacket;
@@ -57,13 +59,28 @@ public class SerialService implements SerialResponseListener {
 
     boolean cardInReader = false;
 
-    public void powerupMode() {
-        serial.lock();
+    public static boolean initialized = false;
+
+    public void initialize() {
         try {
-            // 发送完需要等待MachineStatusPacket返回
-            serial.sendPacket(new StatusRequestPacket(cardInReader), Thread.currentThread(), MachineStatusPacket.code);
-            // 只需要等待ACK即可
-            serial.sendPacket(new ProgrammingDataPacket(2), Thread.currentThread());
+            serial.lock();
+            switch(Global.systemType) {
+                case MDC:
+                    serial.sendPacket(new StatusRequestPacket(cardInReader), Thread.currentThread(), MachineStatusPacket.code);
+                    serial.sendPacket(new VendPricePacket(), Thread.currentThread());
+                    break;
+                case Centurion:
+                    serial.sendPacket(
+                            new CardInitializationPacket(Global.ManufacturerId, Global.FirmwareVersion),
+                            Thread.currentThread(),
+                            MachineControlInitializationPacket.code);
+                    serial.sendPacket(new StatusRequestPacket(cardInReader), Thread.currentThread(), MachineStatusPacket.code);
+                    serial.sendPacket(new VendPricePacket(), Thread.currentThread());
+                    break;
+            }
+            initialized = false;
+        } catch(Exception e) {
+            e.printStackTrace();
         } finally {
             serial.unlock();
         }
@@ -183,6 +200,11 @@ public class SerialService implements SerialResponseListener {
             return;
         }
         switch(status.getCommandToReader()) {
+            // See Centurion Manule 3-16
+            case 0x13:
+                // Centurion initialize comm seq
+                initialize();
+                break;
             case 0x46:
                 // TODO start washing
                 roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.in_use));

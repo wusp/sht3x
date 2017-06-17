@@ -12,7 +12,27 @@ import com.maxtropy.ilaundry.monitor.serial.model.SerialPacket;
 
 public class ProgrammingDataPacket extends SerialPacket {
 
-    public byte code = 0x21;
+    public byte code = getCode();
+
+    public byte getCode() {
+        switch(Global.machineType) {
+            case TopLoadWasher:
+                return 0x21;
+            break;
+            case FrontLoadWasher:
+                return 0x22;
+                break;
+            case WasherExtractor:
+                return 0x24;
+                break;
+            case Tumbler:
+                return 0x28;
+                break;
+            case Dryer:
+                return 0x29;
+                break;
+        }
+    }
 
     public ProgrammingDataPacket(int cycle) {
         tag = this.getClass().getName();
