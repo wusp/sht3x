@@ -17,4 +17,15 @@ public class MachineControlInitializationPacket extends SerialPacket {
 
     public static final byte code = 0x14;
 
+    byte productByte1, productByte2, productByte3, machineConfig, domesticInternational;
+
+    public MachineControlInitializationPacket(SerialPacket packet) {
+        byte[] data = packet.getData();
+        productByte1 = data[3];
+        productByte2 = data[4];
+        productByte3 = data[5];
+        machineConfig = data[6];
+        domesticInternational= data[7];
+    }
+
 }

@@ -53,6 +53,7 @@ public class SerialService implements SerialResponseListener {
     boolean programming = false;
 
     MachineStatusPacket machineStatus = null;
+    public static MachineControlInitializationPacket machineInfo = null;
 
     boolean almostDoneNotified = false;
     boolean doneNotified = true;
@@ -178,10 +179,15 @@ public class SerialService implements SerialResponseListener {
     public void onResponse(SerialPacket msg) {
         // On serial message received
         byte[] data = msg.getData();
-        if(data[2] == MachineStatusPacket.code) {
+        byte code = data[2];
+        if(code == MachineStatusPacket.code) {
             Log.d(Const.TAG, "<< Machine status received");
             machineStatus = MachineStatusBuilder.build(msg);
             onStatusUpdate(machineStatus);
+        }
+        if(code == MachineControlInitializationPacket.code) {
+            Log.d(Const.TAG, "<< Centurion Machine initialization packet received");
+            machineInfo = new MachineControlInitializationPacket(msg);
         }
     }
 
