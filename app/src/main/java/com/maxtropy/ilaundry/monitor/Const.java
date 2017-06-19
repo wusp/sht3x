@@ -14,4 +14,5 @@ public class Const {
     public static final long GPIO_START_SAMPLE_TIME_OUT = 10000;
     public static final int windowsSize = 500;
     public static final int threshold = 190;
+    public static final int limit = 300;
 }

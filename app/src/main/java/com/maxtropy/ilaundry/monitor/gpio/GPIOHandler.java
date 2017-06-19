@@ -38,7 +38,7 @@ public class GPIOHandler {
             sampleSum += sampleValue;
             sampleWindow[windowCount] = sampleValue;
             windowCount = (windowCount +1) % Const.windowsSize;
-            if(sampleSum >= Const.threshold){
+            if(sampleSum >= Const.threshold && sampleSum < Const.limit){
                 callback.run();
             }
         } finally {
