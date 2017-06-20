@@ -33,7 +33,6 @@ public class GPIOHandler {
     public void doSampling() {
         try {
             int sampleValue = Gpio.readRaw(path);
-            Log.v(Const.TAG, "GPIO sample result: " + sampleValue);
             lock.lock();
 
             // 低电平重新置位使能
@@ -47,6 +46,7 @@ public class GPIOHandler {
             windowCount = (windowCount +1) % Const.windowsSize;
             if(sampleSum >= Const.threshold && enabled) {
                 enabled = false;
+                Log.d(Const.TAG, "GPIO Fired.");
                 callback.run();
             }
         } finally {

@@ -63,6 +63,7 @@ public class Roc {
     }
 
     private void init(Context context) {
+        singleton = this;
         rocMessageReceiver = new RocMessageReceiver();
         rocMessageReceiver.addConsumer(new TestToBoxConsumer());
         rocMessageReceiver.addConsumer(new WashRequestConsumer(this));

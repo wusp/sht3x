@@ -130,6 +130,7 @@ public class SerialService implements SerialResponseListener {
 
     public void initiateWechatWash(int cycle, int price) {
         try {
+            Global.vendPrice = price;
             roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.reserved));
             program(cycle);
             serial.lock();

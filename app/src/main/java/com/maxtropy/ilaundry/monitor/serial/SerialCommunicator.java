@@ -54,7 +54,7 @@ public class SerialCommunicator {
     // 当前正在服务的线程。当对方发回ACK时会被唤醒
     private Thread currentServingThread;
     // 0x00 表示没有在等待的数据包
-    private byte waitResponseCode = 0x00;
+    private byte waitResponseCode = (byte)0xff;
     private SerialPacket lastReq;
     private int retryTimes = 0;
 
@@ -218,11 +218,12 @@ public class SerialCommunicator {
         Log.d(Const.TAG, ">> " + lastReq.getClass().getSimpleName() + " : " + bufferToStr(lastReq.getData()));
         writeDataToBuffer(lastReq.toBytes());
         resetTimeout();
+        /*
         try {
             Thread.sleep(5);
         } catch(Exception e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     public boolean sendPacket(SerialPacket req, Thread callingThread) {
@@ -245,7 +246,7 @@ public class SerialCommunicator {
         sendPacket();
         synchronized (callingThread) {
             try {
-                Log.v(Const.TAG, "lock");
+                Log.v(Const.TAG, "wait");
                 callingThread.wait();
             } catch(InterruptedException e) {
                 e.printStackTrace();
@@ -291,7 +292,7 @@ public class SerialCommunicator {
 
     void wakeThread() {
         synchronized (currentServingThread) {
-            waitResponseCode = 0x00;
+            waitResponseCode = (byte)0xff;
             Log.v(Const.TAG, "notify");
             currentServingThread.notify();
             currentServingThread = null;
@@ -334,7 +335,7 @@ public class SerialCommunicator {
             return;
         }
         sendControl(ACK);
-        mHandler.obtainMessage(ACTION_RECEIVE_RESPONSE, res).sendToTarget();
+        onReceiveResponse(res);
         if(waitResponseCode == res.getData()[2]) {
             wakeThread();
         } else if(waitResponseCode != 0x00)
