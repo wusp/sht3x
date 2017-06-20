@@ -79,7 +79,7 @@ public class SerialService implements SerialResponseListener {
                     serial.sendPacket(new VendPricePacket(), Thread.currentThread());
                     break;
             }
-            initialized = false;
+            initialized = true;
         } catch(Exception e) {
             e.printStackTrace();
         } finally {
