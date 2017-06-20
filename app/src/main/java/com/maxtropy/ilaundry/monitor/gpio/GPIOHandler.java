@@ -21,6 +21,9 @@ public class GPIOHandler {
     private int windowCount = 0;
     private int sampleSum = 0;
 
+    // 软件使能信号
+    private boolean enabled = false;
+
     public GPIOHandler(String path, Runnable callback) {
         this.path = path;
         this.callback = callback;
@@ -33,12 +36,17 @@ public class GPIOHandler {
             Log.v(Const.TAG, "GPIO sample result: " + sampleValue);
             lock.lock();
 
+            // 低电平重新置位使能
+            if(sampleValue == 0)
+                enabled = true;
+
             // Use array to simulate a FIFO window.
             sampleSum -= sampleWindow[windowCount];
             sampleSum += sampleValue;
             sampleWindow[windowCount] = sampleValue;
             windowCount = (windowCount +1) % Const.windowsSize;
-            if(sampleSum >= Const.threshold && sampleSum < Const.limit){
+            if(sampleSum >= Const.threshold && enabled) {
+                enabled = false;
                 callback.run();
             }
         } finally {
