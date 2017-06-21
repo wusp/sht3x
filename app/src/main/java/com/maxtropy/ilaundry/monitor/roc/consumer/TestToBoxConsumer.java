@@ -40,17 +40,17 @@ public class TestToBoxConsumer implements IMessageConsumer {
             }
             JSONObject json = new JSONObject(response.getTimestamp());
             String packet = json.getString("packet");
-            if(packet == CardInsertedPacket.class.getSimpleName())
+            if(packet.equals(CardInsertedPacket.class.getSimpleName()))
                 serial.sendSingleRequest(new CardInsertedPacket());
-            if(packet == CashCardRemovedPacket.class.getSimpleName()) {
+            if(packet.equals(CashCardRemovedPacket.class.getSimpleName())) {
                 serial.removeCard();
                 serial.sendSingleRequest(new CashCardRemovedPacket());
             }
-            if(packet == CardRemovedPacket.class.getSimpleName()) {
+            if(packet.equals(CardRemovedPacket.class.getSimpleName())) {
                 serial.removeCard();
                 serial.sendSingleRequest(new CardRemovedPacket());
             }
-            if(packet == ProgrammingDataPacket.class.getSimpleName()) {
+            if(packet.equals(ProgrammingDataPacket.class.getSimpleName())) {
                 serial.program(json.getInt("arg1"));
             }
 

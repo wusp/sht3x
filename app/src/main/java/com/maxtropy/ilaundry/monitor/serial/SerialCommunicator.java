@@ -338,7 +338,7 @@ public class SerialCommunicator {
         onReceiveResponse(res);
         if(waitResponseCode == res.getData()[2]) {
             wakeThread();
-        } else if(waitResponseCode != 0x00)
+        } else if(waitResponseCode != (byte)0xff)
             Log.w(Const.TAG, "Wait response code mismatch: " + waitResponseCode + " : " + res.getData()[2]);
     }
 

@@ -36,7 +36,7 @@ public class GPIOHandler {
             lock.lock();
 
             // 低电平重新置位使能
-            if(sampleValue == 0)
+            if(sampleSum == 0)
                 enabled = true;
 
             // Use array to simulate a FIFO window.

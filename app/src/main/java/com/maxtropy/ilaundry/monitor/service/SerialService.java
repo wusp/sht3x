@@ -100,12 +100,13 @@ public class SerialService implements SerialResponseListener {
             serial.lock();
             serial.sendPacket(new StatusRequestPacket(cardInReader), Thread.currentThread(), MachineStatusPacket.code);
             serial.sendPacket(new VendPricePacket(), Thread.currentThread());
+            serial.unlock();
+            onStatusUpdate(machineStatus);
             return machineStatus;
         } catch(Exception e) {
             e.printStackTrace();
-            return null;
-        } finally {
             serial.unlock();
+            return null;
         }
     }
 
@@ -184,7 +185,6 @@ public class SerialService implements SerialResponseListener {
         if(code == MachineStatusPacket.code) {
             Log.d(Const.TAG, "<< Machine status received");
             machineStatus = MachineStatusBuilder.build(msg);
-            onStatusUpdate(machineStatus);
         }
         if(code == MachineControlInitializationPacket.code) {
             Log.d(Const.TAG, "<< Centurion Machine initialization packet received");
