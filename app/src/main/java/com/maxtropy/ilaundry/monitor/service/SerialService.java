@@ -131,6 +131,8 @@ public class SerialService implements SerialResponseListener {
 
     public void initiateWechatWash(int cycle, int price) {
         try {
+            doneNotified = false;
+            almostDoneNotified = false;
             Global.vendPrice = price;
             roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.reserved));
             program(cycle);
@@ -231,10 +233,9 @@ public class SerialService implements SerialResponseListener {
             roc.sendMessage(new RemainTimeMessage(0));
             roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.available));
         }
-        int remainSec = status.getRemainMinute() * 60 + status.getRemainSecond();
-        if(status.isMode(4) && !almostDoneNotified && remainSec <= 300) {
+        if(status.isMode(4) && !almostDoneNotified && status.getRemainMinute() == 5) {
             almostDoneNotified = true;
-            roc.sendMessage(new RemainTimeMessage(remainSec));
+            roc.sendMessage(new RemainTimeMessage(status.getRemainMinute()));
         }
     }
 
