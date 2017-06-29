@@ -25,7 +25,7 @@ public class MachineStatusPacket extends SerialPacket {
     int remainMinute, remainSecond;
 
     public boolean isMode(int bit) {
-        return (machineStatus & (1 << bit-1) ) != 0;
+        return (machineStatus & (1 << bit) ) != 0;
     }
 
 }
