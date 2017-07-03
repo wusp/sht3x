@@ -194,9 +194,14 @@ public class SerialService implements SerialResponseListener {
         }
     }
 
+    boolean error = false;
+
     @Override
     public void onError(String reason) {
+        if(error)
+            return;
         Roc.getInstance().sendMessage(new WasherErrorMessage(reason));
+        error = true;
     }
 
     public boolean isReady() {
@@ -208,6 +213,7 @@ public class SerialService implements SerialResponseListener {
             onError("Error mode reported by washer");
             return;
         }
+        error = false;
         switch(status.getCommandToReader()) {
             // See Centurion Manule 3-16
             case 0x13:
