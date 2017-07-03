@@ -39,7 +39,7 @@ public class MachineStatusCronService extends BroadcastReceiver {
             return;
         if(!Global.machineTypeRequired) {
             Global.machineTypeRequired = true;
-            roc.sendMessage(new MachineTypeResponse());
+            roc.sendMessage(new MachineTypeRequest());
         }
         if(!Global.initialized())
             return;
