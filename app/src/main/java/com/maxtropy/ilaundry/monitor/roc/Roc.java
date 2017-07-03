@@ -72,6 +72,7 @@ public class Roc {
         appDescriptor = context.getResources().getString(R.string.app_name);
         rocChannel = bindRocService(appDescriptor, ServerId.OTHER, rocBinder);
         cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        sendMessage(new MachineTypeRequest());
     }
 
     /**
