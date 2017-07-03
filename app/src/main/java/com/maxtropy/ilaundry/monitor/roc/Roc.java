@@ -94,7 +94,7 @@ public class Roc {
      * 发送之前先进行RocChannel的相关检查
      * @return
      */
-    private boolean checkChannel() {
+    public boolean checkChannel() {
         if (rocChannel == null || !rocChannel.isOpen()) {
             return false;
         }

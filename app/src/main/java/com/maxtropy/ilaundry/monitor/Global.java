@@ -34,6 +34,8 @@ public class Global {
         }
     }
 
+    public static boolean machineTypeRequired = false;
+
     public static MachineType machineType = MachineType.Undefined;
     public static SystemType systemType = SystemType.Undefined;
 

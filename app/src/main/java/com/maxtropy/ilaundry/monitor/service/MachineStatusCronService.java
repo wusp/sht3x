@@ -8,6 +8,7 @@ import android.util.Log;
 import com.maxtropy.ilaundry.monitor.Const;
 import com.maxtropy.ilaundry.monitor.Global;
 import com.maxtropy.ilaundry.monitor.roc.Roc;
+import com.maxtropy.ilaundry.monitor.roc.message.receive.MachineTypeResponse;
 import com.maxtropy.ilaundry.monitor.roc.message.send.MachineTypeRequest;
 import com.maxtropy.ilaundry.monitor.roc.message.send.ReservableStatusMessage;
 import com.maxtropy.ilaundry.monitor.serial.model.receive.MachineStatusPacket;
@@ -34,6 +35,12 @@ public class MachineStatusCronService extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        if(!roc.checkChannel())
+            return;
+        if(!Global.machineTypeRequired) {
+            Global.machineTypeRequired = true;
+            roc.sendMessage(new MachineTypeResponse());
+        }
         if(!Global.initialized())
             return;
         if(!serial.isReady())
