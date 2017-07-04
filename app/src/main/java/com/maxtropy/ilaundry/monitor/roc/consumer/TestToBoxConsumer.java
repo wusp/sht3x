@@ -4,7 +4,9 @@ import android.filterfw.core.Program;
 import android.util.Log;
 
 import com.maxtropy.ilaundry.monitor.Const;
+import com.maxtropy.ilaundry.monitor.roc.Roc;
 import com.maxtropy.ilaundry.monitor.roc.message.receive.TestToBoxMessage;
+import com.maxtropy.ilaundry.monitor.roc.message.send.WasherErrorMessage;
 import com.maxtropy.ilaundry.monitor.serial.model.send.CardInsertedPacket;
 import com.maxtropy.ilaundry.monitor.serial.model.send.CardRemovedPacket;
 import com.maxtropy.ilaundry.monitor.serial.model.send.CashCardRemovedPacket;
@@ -53,7 +55,9 @@ public class TestToBoxConsumer implements IMessageConsumer {
             if(packet.equals(ProgrammingDataPacket.class.getSimpleName())) {
                 serial.program(json.getInt("arg1"));
             }
-
+            if(packet.equals("Error")) {
+                Roc.getInstance().sendMessage(new WasherErrorMessage("Test Error Message"));
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
