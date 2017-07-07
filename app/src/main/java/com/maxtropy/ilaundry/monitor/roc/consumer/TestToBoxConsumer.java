@@ -4,6 +4,7 @@ import android.filterfw.core.Program;
 import android.util.Log;
 
 import com.maxtropy.ilaundry.monitor.Const;
+import com.maxtropy.ilaundry.monitor.gpio.GPIOCenter;
 import com.maxtropy.ilaundry.monitor.roc.Roc;
 import com.maxtropy.ilaundry.monitor.roc.message.receive.TestToBoxMessage;
 import com.maxtropy.ilaundry.monitor.roc.message.send.WasherErrorMessage;
@@ -57,6 +58,9 @@ public class TestToBoxConsumer implements IMessageConsumer {
             }
             if(packet.equals("Error")) {
                 Roc.getInstance().sendMessage(new WasherErrorMessage("Test Error Message"));
+            }
+            if(packet.equals("GPIO")) {
+                GPIOCenter.getInstance().setValue(Const.GPIO_CARD_READER_ENABLE, json.getInt("arg1"));
             }
         } catch (Exception e) {
             e.printStackTrace();

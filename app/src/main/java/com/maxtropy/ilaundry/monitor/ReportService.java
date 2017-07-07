@@ -57,12 +57,6 @@ public class ReportService extends Service {
         Roc.getInstance(this);
         serial = SerialService.getInstance();
         gpio = GPIOCenter.getInstance();
-        gpio.registerPath(Const.GPIO_COIN, new Runnable() {
-            @Override
-            public void run() {
-                serial.initiateCoinWash();
-            }
-        });
         gpio.registerPath(Const.GPIO_CARD_READER, new Runnable() {
             @Override
             public void run() {

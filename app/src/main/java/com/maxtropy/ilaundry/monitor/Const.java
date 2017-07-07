@@ -7,7 +7,7 @@ package com.maxtropy.ilaundry.monitor;
 public class Const {
     public static final String TAG = "iLaundryMonitor";
 
-    public static final String GPIO_COIN = "/sys/class/gpio_sw/PH11/data"; //1:close 0:open
+    public static final String GPIO_CARD_READER_ENABLE = "/sys/class/gpio_sw/PH17/data"; //1:close 0:open
     public static final String GPIO_CARD_READER = "/sys/class/gpio_sw/PH11/data"; //1:close 0:open
 
     public static final long GPIO_SAMPLE_TIME_OUT = 4;

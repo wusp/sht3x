@@ -132,7 +132,7 @@ public class SerialService implements SerialResponseListener {
 
     public void initiateWechatWash(int cycle, int price) {
         try {
-            GPIOCenter.getInstance().setValue(Const.GPIO_CARD_READER, 0);
+            GPIOCenter.getInstance().setValue(Const.GPIO_CARD_READER_ENABLE, 0);
             doneNotified = false;
             almostDoneNotified = false;
             Global.vendPrice = price;
@@ -240,7 +240,7 @@ public class SerialService implements SerialResponseListener {
             doneNotified = true;
             roc.sendMessage(new RemainTimeMessage(0));
             roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.available));
-            GPIOCenter.getInstance().setValue(Const.GPIO_CARD_READER, 1);
+            GPIOCenter.getInstance().setValue(Const.GPIO_CARD_READER_ENABLE, 1);
         }
         if(status.isMode(4) && !almostDoneNotified && status.getRemainMinute() == 5) {
             almostDoneNotified = true;
