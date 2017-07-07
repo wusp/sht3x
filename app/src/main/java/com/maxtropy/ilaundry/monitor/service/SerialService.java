@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.maxtropy.ilaundry.monitor.Const;
 import com.maxtropy.ilaundry.monitor.Global;
+import com.maxtropy.ilaundry.monitor.gpio.GPIOCenter;
 import com.maxtropy.ilaundry.monitor.roc.message.send.RemainTimeMessage;
 import com.maxtropy.ilaundry.monitor.roc.message.send.ReservableStatusMessage;
 import com.maxtropy.ilaundry.monitor.roc.message.send.WasherErrorMessage;
@@ -131,10 +132,11 @@ public class SerialService implements SerialResponseListener {
 
     public void initiateWechatWash(int cycle, int price) {
         try {
+            GPIOCenter.getInstance().setValue(Const.GPIO_CARD_READER, 0);
             doneNotified = false;
             almostDoneNotified = false;
             Global.vendPrice = price;
-            roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.reserved));
+            // roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.reserved));
             program(cycle);
             serial.lock();
             insertCard();
@@ -238,6 +240,7 @@ public class SerialService implements SerialResponseListener {
             doneNotified = true;
             roc.sendMessage(new RemainTimeMessage(0));
             roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.available));
+            GPIOCenter.getInstance().setValue(Const.GPIO_CARD_READER, 1);
         }
         if(status.isMode(4) && !almostDoneNotified && status.getRemainMinute() == 5) {
             almostDoneNotified = true;

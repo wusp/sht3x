@@ -53,6 +53,10 @@ public class GPIOCenter {
         handlerMap.put(path, new GPIOHandler(path, runnable));
     }
 
+    public void setValue(String path, int value) {
+        Gpio.setRaw(path, String.valueOf(value));
+    }
+
     /**
      * 用来激发每秒一次的GPIO采样
      */

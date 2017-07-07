@@ -18,7 +18,7 @@ public class ReservableStatusMessage extends AbstractMessageV2 {
         in_use(1),
         offline(2),
         error(3),
-        reserved(4);
+        reserved_deprecated(4);
         int value;
         Status(int value) {
             this.value = value;
