@@ -56,7 +56,6 @@ public class SerialService implements SerialResponseListener {
     MachineStatusPacket machineStatus = null;
     public static MachineControlInitializationPacket machineInfo = null;
 
-    boolean almostDoneNotified = false;
     boolean doneNotified = true;
 
     boolean cardInReader = false;
@@ -134,7 +133,7 @@ public class SerialService implements SerialResponseListener {
         try {
             GPIOCenter.getInstance().setValue(Const.GPIO_CARD_READER_ENABLE, 0);
             doneNotified = false;
-            almostDoneNotified = false;
+            lastNotification = 0;
             Global.vendPrice = price;
             // roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.reserved));
             program(cycle);
@@ -197,6 +196,7 @@ public class SerialService implements SerialResponseListener {
     }
 
     boolean error = false;
+    int lastNotification = 0;
 
     @Override
     public void onError(String reason) {
@@ -242,9 +242,10 @@ public class SerialService implements SerialResponseListener {
             roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.available));
             GPIOCenter.getInstance().setValue(Const.GPIO_CARD_READER_ENABLE, 1);
         }
-        if(status.isMode(4) && !almostDoneNotified && status.getRemainMinute() == 5) {
-            almostDoneNotified = true;
-            roc.sendMessage(new RemainTimeMessage(status.getRemainMinute()));
+        int minute = status.getRemainMinute();
+        if(status.isMode(4) && Math.abs(lastNotification - minute) >= 2) {
+            lastNotification = minute;
+            roc.sendMessage(new RemainTimeMessage(minute));
         }
     }
 
