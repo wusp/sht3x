@@ -31,7 +31,7 @@ node(){
               "files": [
                 {
                   "pattern": "app/build/outputs/apk/*.apk",
-                  "target": "apk/com/maxtropy/BrightMonitor/${folder}/"
+                  "target": "apk/com/maxtropy/ilaundry-box-app/${folder}/"
                 }
               ]
             }"""
