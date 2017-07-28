@@ -135,7 +135,7 @@ public class SerialService implements SerialResponseListener {
             doneNotified = false;
             lastNotification = 0;
             Global.vendPrice = price;
-            roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.in_use));
+            roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.reserved_deprecated));
             program(cycle);
             serial.lock();
             insertCard();
