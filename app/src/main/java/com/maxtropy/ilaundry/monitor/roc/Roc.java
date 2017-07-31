@@ -10,6 +10,7 @@ import android.util.Log;
 import com.maxtropy.ilaundry.monitor.Const;
 import com.maxtropy.ilaundry.monitor.R;
 import com.maxtropy.ilaundry.monitor.roc.consumer.MachineTypeConsumer;
+import com.maxtropy.ilaundry.monitor.roc.consumer.ReserveRequestConsumer;
 import com.maxtropy.ilaundry.monitor.roc.consumer.TestToBoxConsumer;
 import com.maxtropy.ilaundry.monitor.roc.consumer.WashRequestConsumer;
 import com.maxtropy.ilaundry.monitor.roc.message.receive.MachineTypeResponse;
@@ -68,6 +69,7 @@ public class Roc {
         rocMessageReceiver.addConsumer(new TestToBoxConsumer());
         rocMessageReceiver.addConsumer(new WashRequestConsumer(this));
         rocMessageReceiver.addConsumer(new MachineTypeConsumer());
+        rocMessageReceiver.addConsumer(new ReserveRequestConsumer());
         rocBinder = new ServiceBinder(context, rocMessageReceiver);
         appDescriptor = context.getResources().getString(R.string.app_name);
         rocChannel = bindRocService(appDescriptor, ServerId.OTHER, rocBinder);
