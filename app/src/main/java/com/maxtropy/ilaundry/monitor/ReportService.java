@@ -57,8 +57,9 @@ public class ReportService extends Service {
         Roc.getInstance(this);
         serial = SerialService.getInstance();
         gpio = GPIOCenter.getInstance();
-        // Power on MDC board as soon as we're started
+        // Power on MDC board and enable card reader as soon as we're started
         gpio.setValue(Const.GPIO_MDC_POWER_ENABLE, 1);
+        gpio.setValue(Const.GPIO_CARD_READER_ENABLE, 1);
         gpio.registerPath(Const.GPIO_CARD_READER, new Runnable() {
             @Override
             public void run() {
