@@ -18,12 +18,6 @@ import com.maxtropy.roc.model.MessageData;
 
 public class ReserveRequestConsumer implements IMessageConsumer {
 
-    Roc roc;
-
-    public ReserveRequestConsumer(Roc roc) {
-        this.roc = roc;
-    }
-
     @Override
     public void consume(MessageData data, RocChannel rocChannel) {
         try {
