@@ -57,6 +57,16 @@ public class GPIOCenter {
         Gpio.setRaw(path, String.valueOf(value));
     }
 
+    public void disableCardReader() {
+        setValue(Const.GPIO_CARD_READER_ENABLE, 0);
+        Log.d("Card reader", "Card reader disabled.");
+    }
+
+    public void enableCardReader() {
+        setValue(Const.GPIO_CARD_READER_ENABLE, 1);
+        Log.d("Card reader", "Card reader enabled.");
+    }
+
     /**
      * 用来激发每秒一次的GPIO采样
      */

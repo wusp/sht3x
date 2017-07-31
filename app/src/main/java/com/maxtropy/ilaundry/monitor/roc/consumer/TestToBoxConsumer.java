@@ -62,6 +62,9 @@ public class TestToBoxConsumer implements IMessageConsumer {
             if(packet.equals("GPIO")) {
                 GPIOCenter.getInstance().setValue(Const.GPIO_CARD_READER_ENABLE, json.getInt("arg1"));
             }
+            if(packet.equals("ec")) {
+                serial.showErrorCode(json.getInt("arg1"));
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

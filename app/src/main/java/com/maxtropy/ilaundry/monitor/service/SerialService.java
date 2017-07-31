@@ -6,6 +6,7 @@ import android.util.Log;
 import com.maxtropy.ilaundry.monitor.Const;
 import com.maxtropy.ilaundry.monitor.Global;
 import com.maxtropy.ilaundry.monitor.gpio.GPIOCenter;
+import com.maxtropy.ilaundry.monitor.roc.message.receive.ReserveRequest;
 import com.maxtropy.ilaundry.monitor.roc.message.send.RemainTimeMessage;
 import com.maxtropy.ilaundry.monitor.roc.message.send.ReservableStatusMessage;
 import com.maxtropy.ilaundry.monitor.roc.message.send.WasherErrorMessage;
@@ -20,6 +21,7 @@ import com.maxtropy.ilaundry.monitor.serial.model.send.CardInsertedPacket;
 import com.maxtropy.ilaundry.monitor.serial.model.send.CardInsertedTopOffPacket;
 import com.maxtropy.ilaundry.monitor.serial.model.send.CardRemovedPacket;
 import com.maxtropy.ilaundry.monitor.serial.model.send.CashCardRemovedPacket;
+import com.maxtropy.ilaundry.monitor.serial.model.send.DisplayRequest;
 import com.maxtropy.ilaundry.monitor.serial.model.send.MachineStartPacket;
 import com.maxtropy.ilaundry.monitor.serial.model.send.StatusRequestPacket;
 import com.maxtropy.ilaundry.monitor.serial.model.send.ProgrammingDataPacket;
@@ -27,6 +29,8 @@ import com.maxtropy.ilaundry.monitor.roc.Roc;
 import com.maxtropy.ilaundry.monitor.serial.SerialCommunicator;
 import com.maxtropy.ilaundry.monitor.serial.SerialResponseListener;
 import com.maxtropy.ilaundry.monitor.serial.model.send.VendPricePacket;
+
+import java.util.HashMap;
 
 /**
  * Created by Gerald on 6/3/2017.
@@ -52,6 +56,7 @@ public class SerialService implements SerialResponseListener {
     }
 
     boolean programming = false;
+    boolean busy = false;
 
     MachineStatusPacket machineStatus = null;
     public static MachineControlInitializationPacket machineInfo = null;
@@ -62,6 +67,8 @@ public class SerialService implements SerialResponseListener {
 
     public static boolean initialized = false;
 
+    private GPIOCenter gpio;
+
     public void initialize() {
         try {
             serial.lock();
@@ -69,6 +76,9 @@ public class SerialService implements SerialResponseListener {
                 case MDC:
                     serial.sendPacket(new StatusRequestPacket(cardInReader), Thread.currentThread(), MachineStatusPacket.code);
                     serial.sendPacket(new VendPricePacket(), Thread.currentThread());
+                    gpio = GPIOCenter.getInstance();
+                    gpio.setValue(Const.GPIO_CARD_READER_ENABLE, 1);
+                    gpio.setValue(Const.GPIO_MDC_AVAILABLE, 0);
                     break;
                 case Centurion:
                     serial.sendPacket(
@@ -93,6 +103,12 @@ public class SerialService implements SerialResponseListener {
 
     public void removeCard() {
         cardInReader = false;
+    }
+
+    int[] ledDigits = {126, 12, 182, 158, 204, 218, 250, 14, 254, 222};
+
+    public void showErrorCode(int code) {
+        sendSingleRequest(new DisplayRequest(242, 114, ledDigits[code / 10 % 10], ledDigits[code % 10]));
     }
 
     public MachineStatusPacket getMachineStatus() {
@@ -131,11 +147,13 @@ public class SerialService implements SerialResponseListener {
 
     public void initiateWechatWash(int cycle, int price) {
         try {
-            GPIOCenter.getInstance().setValue(Const.GPIO_CARD_READER_ENABLE, 0);
             doneNotified = false;
             lastNotification = 0;
             Global.vendPrice = price;
             roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.reserved_deprecated));
+            gpio.setValue(Const.GPIO_MDC_AVAILABLE, 1);
+            gpio.disableCardReader();
+            busy = true;
             program(cycle);
             serial.lock();
             insertCard();
@@ -223,7 +241,6 @@ public class SerialService implements SerialResponseListener {
                 initialize();
                 break;
             case 0x46:
-                // TODO start washing
                 roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.in_use));
                 sendSingleRequest(new MachineStartPacket());
                 removeCard();
@@ -237,10 +254,13 @@ public class SerialService implements SerialResponseListener {
                 break;
         }
         if(status.isMode(5) && !doneNotified) {
+            // Job finished. Report availability.
+            busy = false;
             doneNotified = true;
             roc.sendMessage(new RemainTimeMessage(0));
             roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.available));
-            GPIOCenter.getInstance().setValue(Const.GPIO_CARD_READER_ENABLE, 1);
+            gpio.setValue(Const.GPIO_MDC_AVAILABLE, 0);
+            gpio.enableCardReader();
         }
         int minute = status.getRemainMinute();
         if(status.isMode(4) && Math.abs(lastNotification - minute) >= 2) {
@@ -249,4 +269,13 @@ public class SerialService implements SerialResponseListener {
         }
     }
 
+    public void changeReserveState(ReserveRequest request) {
+        if(request.getReserveState() == 1) {
+            gpio.disableCardReader();
+        } else {
+            if(!busy) {
+                gpio.enableCardReader();
+            }
+        }
+    }
 }
