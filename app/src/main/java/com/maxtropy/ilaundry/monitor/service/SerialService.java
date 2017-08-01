@@ -289,18 +289,22 @@ public class SerialService implements SerialResponseListener {
         Log.d(Const.TAG, tmp);
         */
 
-        if((status.isMode(1) || status.isMode(5)) && this.status == Status.initialization) {
-            toIdleState();
-        }
-        if(status.isMode(5) && this.status == Status.started) {
+        if((status.isMode(1) || status.isMode(5)) && (this.status == Status.initialization || this.status == Status.started || this.status == Status.error)) {
             // Job finished. Report availability.
+            if(this.status == Status.started) {
+                roc.sendMessage(new RemainTimeMessage(0));
+            }
             toIdleState();
-            roc.sendMessage(new RemainTimeMessage(0));
         }
         int minute = status.getRemainMinute();
-        if(status.isMode(4) && Math.abs(lastNotification - minute) >= 2) {
-            lastNotification = minute;
-            roc.sendMessage(new RemainTimeMessage(minute));
+        if(status.isMode(4)) {
+            if(this.status != Status.started) {
+                toStartedState();
+            }
+            if(Math.abs(lastNotification - minute) >= 2) {
+                lastNotification = minute;
+                roc.sendMessage(new RemainTimeMessage(minute));
+            }
         }
     }
 
