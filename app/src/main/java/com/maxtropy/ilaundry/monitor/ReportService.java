@@ -16,6 +16,7 @@ import com.maxtropy.ilaundry.monitor.gpio.GPIOCenter;
 import com.maxtropy.ilaundry.monitor.roc.Roc;
 import com.maxtropy.ilaundry.monitor.roc.message.receive.MachineTypeResponse;
 import com.maxtropy.ilaundry.monitor.serial.SerialCommunicator;
+import com.maxtropy.ilaundry.monitor.service.ConfigService;
 import com.maxtropy.ilaundry.monitor.service.MachineStatusCronService;
 import com.maxtropy.ilaundry.monitor.service.SerialService;
 import com.maxtropy.roc.util.IntentReceiver;
@@ -55,6 +56,7 @@ public class ReportService extends Service {
         Log.d(Const.TAG, "Service started.");
         SerialCommunicator.getInstance();
         Roc.getInstance(this);
+        ConfigService.init(getApplicationContext().getSharedPreferences("ilaundry", MODE_PRIVATE));
         serial = SerialService.getInstance();
         gpio = GPIOCenter.getInstance();
         // Power on MDC board and enable card reader as soon as we're started

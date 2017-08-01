@@ -31,8 +31,6 @@ public class MachineStatusCronService extends BroadcastReceiver {
     private Random ran = new Random(System.currentTimeMillis());
     Roc roc;
 
-    int machineTypeTimeout = 0;
-
     public MachineStatusCronService() {
         roc = Roc.getInstance();
     }
@@ -44,12 +42,15 @@ public class MachineStatusCronService extends BroadcastReceiver {
         if(!Global.machineTypeRequired) {
             Global.machineTypeRequired = true;
             roc.sendMessage(new MachineTypeRequest());
-            machineTypeTimeout = 5;
+            Global.machineTypeTimeout = 60;
+            Log.d(Const.TAG, "Rest timeout: " + Global.machineTypeTimeout);
             return;
         }
+        Log.d(Const.TAG, "Rest timeout: " +Global. machineTypeTimeout);
         if(!Global.initialized()) {
-            machineTypeTimeout --;
-            if(machineTypeTimeout == 0) {
+            Global.machineTypeTimeout --;
+            Log.d(Const.TAG, "Rest timeout: " + Global.machineTypeTimeout);
+            if(Global.machineTypeTimeout == 0) {
                 ConfigService configService = ConfigService.getInstance();
                 String machineType = configService.getMachineType();
                 if(machineType == null) {
