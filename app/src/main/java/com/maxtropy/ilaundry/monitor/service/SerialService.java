@@ -242,11 +242,19 @@ public class SerialService implements SerialResponseListener {
     void toIdleState() {
         status = Status.idle;
         gpio.enableCardReader();
+        Log.d(Const.TAG, "[Status] Idle");
     }
 
     void toReserveState() {
         status = Status.reserved;
         gpio.disableCardReader();
+        Log.d(Const.TAG, "[Status] Reserved");
+    }
+
+    void toStartedState() {
+        roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.in_use));
+        this.status = Status.started;
+        Log.d(Const.TAG, "[Status] Started");
     }
 
     synchronized void onStatusUpdate(MachineStatusPacket status) {
@@ -262,8 +270,7 @@ public class SerialService implements SerialResponseListener {
                 initialize();
                 break;
             case 0x46:
-                roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.in_use));
-                this.status = Status.started;
+                toStartedState();
                 sendSingleRequest(new MachineStartPacket());
                 removeCard();
                 sendSingleRequest(new CashCardRemovedPacket());
