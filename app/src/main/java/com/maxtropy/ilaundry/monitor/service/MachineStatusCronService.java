@@ -43,10 +43,8 @@ public class MachineStatusCronService extends BroadcastReceiver {
             Global.machineTypeRequired = true;
             roc.sendMessage(new MachineTypeRequest());
             Global.machineTypeTimeout = 60;
-            Log.d(Const.TAG, "Rest timeout: " + Global.machineTypeTimeout);
             return;
         }
-        Log.d(Const.TAG, "Rest timeout: " +Global. machineTypeTimeout);
         if(!Global.initialized()) {
             Global.machineTypeTimeout --;
             Log.d(Const.TAG, "Rest timeout: " + Global.machineTypeTimeout);
