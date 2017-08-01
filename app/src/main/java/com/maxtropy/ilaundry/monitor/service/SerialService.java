@@ -56,12 +56,25 @@ public class SerialService implements SerialResponseListener {
     }
 
     boolean programming = false;
-    boolean busy = false;
+
+    enum Status {
+        initialization(0),
+        idle(1),
+        reserved(2),
+        paid(3),
+        started(4),
+        done(5),
+        error(6);    // before notification
+        int value;
+        private Status(int value) {
+            this.value = value;
+        }
+    }
+
+    public Status status = Status.initialization;
 
     MachineStatusPacket machineStatus = null;
     public static MachineControlInitializationPacket machineInfo = null;
-
-    boolean doneNotified = true;
 
     boolean cardInReader = false;
 
@@ -146,12 +159,11 @@ public class SerialService implements SerialResponseListener {
 
     public void initiateWechatWash(int cycle, int price) {
         try {
-            doneNotified = false;
+            status = Status.paid;
             lastNotification = 0;
             Global.vendPrice = price;
             roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.reserved_deprecated));
             gpio.disableCardReader();
-            busy = true;
             program(cycle);
             serial.lock();
             insertCard();
@@ -216,14 +228,25 @@ public class SerialService implements SerialResponseListener {
 
     @Override
     public void onError(String reason) {
-        if(error)
+        if(status == Status.error)
             return;
         Roc.getInstance().sendMessage(new WasherErrorMessage(reason));
-        error = true;
+        gpio.disableCardReader();
+        status = Status.error;
     }
 
     public boolean isReady() {
         return serial.isReady();
+    }
+
+    void toIdleState() {
+        status = Status.idle;
+        gpio.enableCardReader();
+    }
+
+    void toReserveState() {
+        status = Status.reserved;
+        gpio.disableCardReader();
     }
 
     synchronized void onStatusUpdate(MachineStatusPacket status) {
@@ -240,6 +263,7 @@ public class SerialService implements SerialResponseListener {
                 break;
             case 0x46:
                 roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.in_use));
+                this.status = Status.started;
                 sendSingleRequest(new MachineStartPacket());
                 removeCard();
                 sendSingleRequest(new CashCardRemovedPacket());
@@ -251,13 +275,13 @@ public class SerialService implements SerialResponseListener {
                 sendSingleRequest(new CashCardRemovedPacket());
                 break;
         }
-        if(status.isMode(5) && !doneNotified) {
+        if(status.isMode(1) && this.status == Status.initialization) {
+            toIdleState();
+        }
+        if(status.isMode(5) && this.status == Status.started) {
             // Job finished. Report availability.
-            busy = false;
-            doneNotified = true;
+            toIdleState();
             roc.sendMessage(new RemainTimeMessage(0));
-            roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.available));
-            gpio.enableCardReader();
         }
         int minute = status.getRemainMinute();
         if(status.isMode(4) && Math.abs(lastNotification - minute) >= 2) {
@@ -268,9 +292,9 @@ public class SerialService implements SerialResponseListener {
 
     public void changeReserveState(ReserveRequest request) {
         if(request.getReserveState() == 1) {
-            gpio.disableCardReader();
+            toReserveState();
         } else {
-            if(!busy) {
+            if(status == Status.idle) {
                 gpio.enableCardReader();
             }
         }
