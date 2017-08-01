@@ -1,7 +1,12 @@
 package com.maxtropy.ilaundry.monitor;
 
+import android.graphics.Bitmap;
+
 import com.maxtropy.ilaundry.monitor.roc.message.receive.MachineTypeResponse;
 import com.maxtropy.ilaundry.monitor.serial.SerialCommunicator;
+import com.maxtropy.ilaundry.monitor.service.ConfigService;
+
+import org.json.JSONObject;
 
 /**
  * Created by Gerald on 6/8/2017.
@@ -56,6 +61,16 @@ public class Global {
     public static void initialMachineType(MachineTypeResponse response) {
         machineType = MachineType.values()[response.getMachineType()];
         systemType = SystemType.values()[response.getSystemType()];
+        try {
+            JSONObject json = new JSONObject();
+            json.put("machineType", response.getMachineType());
+            json.put("systemType", response.getSystemType());
+            ConfigService service = ConfigService.getInstance();
+            service.saveMachineType(json.toString());
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 
 }

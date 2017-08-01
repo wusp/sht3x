@@ -13,6 +13,8 @@ import com.maxtropy.ilaundry.monitor.roc.message.send.MachineTypeRequest;
 import com.maxtropy.ilaundry.monitor.roc.message.send.ReservableStatusMessage;
 import com.maxtropy.ilaundry.monitor.serial.model.receive.MachineStatusPacket;
 
+import org.json.JSONObject;
+
 import java.util.Random;
 
 /**
@@ -29,6 +31,8 @@ public class MachineStatusCronService extends BroadcastReceiver {
     private Random ran = new Random(System.currentTimeMillis());
     Roc roc;
 
+    int machineTypeTimeout = 0;
+
     public MachineStatusCronService() {
         roc = Roc.getInstance();
     }
@@ -40,9 +44,30 @@ public class MachineStatusCronService extends BroadcastReceiver {
         if(!Global.machineTypeRequired) {
             Global.machineTypeRequired = true;
             roc.sendMessage(new MachineTypeRequest());
-        }
-        if(!Global.initialized())
+            machineTypeTimeout = 5;
             return;
+        }
+        if(!Global.initialized()) {
+            machineTypeTimeout --;
+            if(machineTypeTimeout == 0) {
+                ConfigService configService = ConfigService.getInstance();
+                String machineType = configService.getMachineType();
+                if(machineType == null) {
+                    Global.machineTypeRequired = false;
+                    return;
+                }
+                try {
+                    // initialize.
+                    JSONObject json = new JSONObject(machineType);
+                    Global.machineType = Global.MachineType.values()[json.getInt("machineType")];
+                    Global.systemType = Global.SystemType.values()[json.getInt("systemType")];
+                } catch(Exception e) {
+                    e.printStackTrace();
+                    System.exit(1);
+                }
+            }
+            return;
+        }
         if(!serial.isReady())
             return;
         if(!serial.initialized) {
