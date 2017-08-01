@@ -72,7 +72,6 @@ public class MachineStatusCronService extends BroadcastReceiver {
             return;
         if(!serial.initialized) {
             serial.initialize();
-            roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.available));
             return;
         }
         // app = context.getApplicationContext();

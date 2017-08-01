@@ -101,6 +101,7 @@ public class SerialService implements SerialResponseListener {
             }
             gpio = GPIOCenter.getInstance();
             initialized = true;
+            status = Status.initialization;
         } catch(Exception e) {
             e.printStackTrace();
         } finally {
@@ -241,6 +242,7 @@ public class SerialService implements SerialResponseListener {
     void toIdleState() {
         status = Status.idle;
         gpio.enableCardReader();
+        roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.available));
         Log.d(Const.TAG, "[Status] Idle");
     }
 
