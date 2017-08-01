@@ -15,6 +15,7 @@ import org.json.JSONObject;
 public class Global {
 
     public final static byte TOP_OFF_TIME = 10;
+    public static int machineTypeTimeout;
 
     public enum MachineType {
         Undefined(0),
