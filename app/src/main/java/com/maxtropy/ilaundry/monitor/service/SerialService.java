@@ -76,9 +76,6 @@ public class SerialService implements SerialResponseListener {
                 case MDC:
                     serial.sendPacket(new StatusRequestPacket(cardInReader), Thread.currentThread(), MachineStatusPacket.code);
                     serial.sendPacket(new VendPricePacket(), Thread.currentThread());
-                    gpio = GPIOCenter.getInstance();
-                    gpio.setValue(Const.GPIO_CARD_READER_ENABLE, 1);
-                    gpio.setValue(Const.GPIO_MDC_AVAILABLE, 0);
                     break;
                 case Centurion:
                     serial.sendPacket(
@@ -89,6 +86,8 @@ public class SerialService implements SerialResponseListener {
                     serial.sendPacket(new VendPricePacket(), Thread.currentThread());
                     break;
             }
+            gpio = GPIOCenter.getInstance();
+            gpio.enableCardReader();
             initialized = true;
         } catch(Exception e) {
             e.printStackTrace();
@@ -151,7 +150,6 @@ public class SerialService implements SerialResponseListener {
             lastNotification = 0;
             Global.vendPrice = price;
             roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.reserved_deprecated));
-            gpio.setValue(Const.GPIO_MDC_AVAILABLE, 1);
             gpio.disableCardReader();
             busy = true;
             program(cycle);
@@ -259,7 +257,6 @@ public class SerialService implements SerialResponseListener {
             doneNotified = true;
             roc.sendMessage(new RemainTimeMessage(0));
             roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.available));
-            gpio.setValue(Const.GPIO_MDC_AVAILABLE, 0);
             gpio.enableCardReader();
         }
         int minute = status.getRemainMinute();
