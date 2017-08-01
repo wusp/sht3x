@@ -100,7 +100,6 @@ public class SerialService implements SerialResponseListener {
                     break;
             }
             gpio = GPIOCenter.getInstance();
-            gpio.enableCardReader();
             initialized = true;
         } catch(Exception e) {
             e.printStackTrace();
@@ -282,7 +281,15 @@ public class SerialService implements SerialResponseListener {
                 sendSingleRequest(new CashCardRemovedPacket());
                 break;
         }
-        if(status.isMode(1) && this.status == Status.initialization) {
+
+        /*
+        String tmp = "";
+        for(int i = 0; i < 8; ++i)
+            tmp += status.isMode(i) + " ";
+        Log.d(Const.TAG, tmp);
+        */
+
+        if((status.isMode(1) || status.isMode(5)) && this.status == Status.initialization) {
             toIdleState();
         }
         if(status.isMode(5) && this.status == Status.started) {
@@ -301,8 +308,8 @@ public class SerialService implements SerialResponseListener {
         if(request.getReserveState() == 1) {
             toReserveState();
         } else {
-            if(status == Status.idle) {
-                gpio.enableCardReader();
+            if(status == Status.reserved) {
+                toIdleState();
             }
         }
     }
