@@ -56,6 +56,7 @@ public class SerialService implements SerialResponseListener {
     }
 
     boolean programming = false;
+    public boolean heartbeatDisabled = false;
 
     enum Status {
         initialization(0),
@@ -159,6 +160,7 @@ public class SerialService implements SerialResponseListener {
 
     public void initiateWechatWash(int cycle, int price) {
         try {
+            heartbeatDisabled = true;
             status = Status.paid;
             lastNotification = 0;
             Global.vendPrice = price;
@@ -169,6 +171,7 @@ public class SerialService implements SerialResponseListener {
             insertCard();
             serial.sendPacket(new CardInsertedPacket(Global.vendPrice * 2, Global.vendPrice), Thread.currentThread());
             serial.sendPacket(new AudioBeepRequest(4), Thread.currentThread());
+            heartbeatDisabled = false;
         } catch(Exception e) {
             e.printStackTrace();
         } finally {
@@ -254,6 +257,7 @@ public class SerialService implements SerialResponseListener {
 
     void toStartedState() {
         roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.in_use));
+        gpio.disableCardReader();
         this.status = Status.started;
         Log.d(Const.TAG, "[Status] Started");
     }
@@ -271,10 +275,12 @@ public class SerialService implements SerialResponseListener {
                 initialize();
                 break;
             case 0x46:
-                toStartedState();
+                // toStartedState();
+                heartbeatDisabled = true;
                 sendSingleRequest(new MachineStartPacket());
                 removeCard();
                 sendSingleRequest(new CashCardRemovedPacket());
+                heartbeatDisabled = false;
                 break;
             case 0x47:
                 // deduct topoff vend
@@ -284,12 +290,12 @@ public class SerialService implements SerialResponseListener {
                 break;
         }
 
-        /*
-        String tmp = "";
+
+        String tmp = "Status: ";
         for(int i = 0; i < 8; ++i)
-            tmp += status.isMode(i) + " ";
+            if(status.isMode(i))
+                tmp += i + " ";
         Log.d(Const.TAG, tmp);
-        */
 
         if((status.isMode(1) || status.isMode(5)) && (this.status == Status.initialization || this.status == Status.started || this.status == Status.error)) {
             // Job finished. Report availability.
