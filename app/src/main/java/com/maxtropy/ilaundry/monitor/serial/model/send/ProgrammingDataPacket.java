@@ -33,7 +33,7 @@ public class ProgrammingDataPacket extends SerialPacket {
         }
     }
 
-    public ProgrammingDataPacket(int cycle) {
+    public ProgrammingDataPacket(int cycle, int length) {
         tag = this.getClass().getName();
         // 不想创很多类，这样是最简单的方法了
         // 虽然可维护性会不是很好
@@ -47,7 +47,7 @@ public class ProgrammingDataPacket extends SerialPacket {
                         putShort(3, 25);    // Coin 1
                         putShort(5, 100);   // Coin 2
                         putShort(7, 100);    // Start pulse
-                        putByte(9, 1);     // cycle length
+                        putByte(9, length);     // cycle length
                         putByte(10, 8);     // control configuration
                         putByte(11, cycle);    // default cycle
                         break;

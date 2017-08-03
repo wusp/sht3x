@@ -132,7 +132,7 @@ public class SerialService implements SerialResponseListener {
             serial.unlock();
             onStatusUpdate(machineStatus);
             return machineStatus;
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             serial.unlock();
             return null;
@@ -143,7 +143,7 @@ public class SerialService implements SerialResponseListener {
         try {
             serial.lock();
             insertCard();
-            serial.sendPacket(new ProgrammingDataPacket(cycle), Thread.currentThread());
+            serial.sendPacket(new ProgrammingDataPacket(cycle, cycle==3?0:1), Thread.currentThread());
             Thread.sleep(2000);
             removeCard();
             serial.sendPacket(new CardRemovedPacket(), Thread.currentThread());
@@ -301,6 +301,7 @@ public class SerialService implements SerialResponseListener {
             // Job finished. Report availability.
             if(this.status == Status.started) {
                 roc.sendMessage(new RemainTimeMessage(0));
+                program(2);
             }
             toIdleState();
         }

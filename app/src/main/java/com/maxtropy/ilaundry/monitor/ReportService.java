@@ -36,6 +36,7 @@ public class ReportService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        ConfigService.init(getApplicationContext().getSharedPreferences("ilaundry", MODE_PRIVATE));
         Log.d(Const.TAG, "Service created.");
         coreIntentReceiver = new IntentReceiver(getClass().getName());
         registerReceiver(coreIntentReceiver, new IntentFilter(com.maxtropy.roc.Const.HEALTH_CHECK_ACTION));
@@ -56,7 +57,6 @@ public class ReportService extends Service {
         Log.d(Const.TAG, "Service started.");
         SerialCommunicator.getInstance();
         Roc.getInstance(this);
-        ConfigService.init(getApplicationContext().getSharedPreferences("ilaundry", MODE_PRIVATE));
         serial = SerialService.getInstance();
         gpio = GPIOCenter.getInstance();
         // Power on MDC board and enable card reader as soon as we're started

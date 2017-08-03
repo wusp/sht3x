@@ -18,4 +18,6 @@ public class Const {
     public static final int windowsSize = 500;
     public static final int threshold = 190;
     public static final int limit = 300;
+
+    public static final int[] mdcCycleMapping = {-1, 2, 3, 1, 4};
 }
