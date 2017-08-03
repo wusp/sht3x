@@ -13,6 +13,7 @@ import com.tencent.bugly.crashreport.CrashReport;
 public class MyApp extends MultiDexApplication {
     @Override
     public void onCreate() {
+        ConfigService.init(getApplicationContext().getSharedPreferences("ilaundry", MODE_PRIVATE));
         super.onCreate();
         CrashReport.initCrashReport(getApplicationContext(), "998fb72648", true);
         Roc.getInstance(this);

@@ -36,7 +36,6 @@ public class ReportService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        ConfigService.init(getApplicationContext().getSharedPreferences("ilaundry", MODE_PRIVATE));
         Log.d(Const.TAG, "Service created.");
         coreIntentReceiver = new IntentReceiver(getClass().getName());
         registerReceiver(coreIntentReceiver, new IntentFilter(com.maxtropy.roc.Const.HEALTH_CHECK_ACTION));
