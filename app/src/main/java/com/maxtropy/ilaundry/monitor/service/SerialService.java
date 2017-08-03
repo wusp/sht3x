@@ -158,13 +158,12 @@ public class SerialService implements SerialResponseListener {
         }
     }
 
-    public void initiateWechatWash(int cycle, int price) {
+    public void initiateWash(int cycle, int price) {
         try {
             heartbeatDisabled = true;
             status = Status.paid;
             lastNotification = 0;
             Global.vendPrice = price;
-            roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.reserved_deprecated));
             gpio.disableCardReader();
             program(cycle);
             serial.lock();
@@ -180,11 +179,12 @@ public class SerialService implements SerialResponseListener {
     }
 
     public void initiateCoinWash() {
-        initiateWechatWash(2, Global.vendPrice);
+        initiateWash(2, Global.vendPrice);
     }
 
     public void initiateCardWash() {
-        initiateWechatWash(2, Global.vendPrice);
+        roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.card_reader_reserved));
+        initiateWash(2, Global.vendPrice);
     }
 
     public void additionalTime() {
@@ -256,7 +256,7 @@ public class SerialService implements SerialResponseListener {
     }
 
     void toStartedState() {
-        roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.in_use));
+        roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.machine_running));
         gpio.disableCardReader();
         this.status = Status.started;
         Log.d(Const.TAG, "[Status] Started");
