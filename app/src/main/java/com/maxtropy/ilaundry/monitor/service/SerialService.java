@@ -319,6 +319,9 @@ public class SerialService implements SerialResponseListener {
 
     public void changeReserveState(ReserveRequest request) {
         if(request.getReserveState() == 1) {
+            if(status != Status.idle) {
+                roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.card_reader_reserved));
+            }
             toReserveState();
         } else {
             if(status == Status.reserved) {
