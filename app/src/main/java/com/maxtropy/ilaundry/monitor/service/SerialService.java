@@ -164,6 +164,7 @@ public class SerialService implements SerialResponseListener {
         try {
             if(orderId != config.getOrderId()) {
                 toIdleState();
+                return;
             }
             heartbeatDisabled = true;
             status = Status.paid;
