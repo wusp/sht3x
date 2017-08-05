@@ -57,7 +57,7 @@ public class TestToBoxConsumer implements IMessageConsumer {
                 serial.program(json.getInt("arg1"));
             }
             if(packet.equals("Error")) {
-                Roc.getInstance().sendMessage(new WasherErrorMessage("Test Error Message"));
+                Roc.getInstance().sendMessage(new WasherErrorMessage("Test Error Message", Const.emptyOrderId));
             }
             if(packet.equals("GPIO")) {
                 GPIOCenter.getInstance().setValue(Const.GPIO_CARD_READER_ENABLE, json.getInt("arg1"));

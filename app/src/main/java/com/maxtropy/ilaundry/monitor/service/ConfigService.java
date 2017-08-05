@@ -48,9 +48,13 @@ public class ConfigService {
     }
 
     public String getOrderId() {
-        String tmps = settings.getString("orderId", null);
+        String tmps = settings.getString("orderId", Const.emptyOrderId);
         Log.d(Const.TAG, "[Get OrderId from Storage]: " + tmps);
         return tmps;
+    }
+
+    public void clearOrderId(){
+        saveOrderId(Const.emptyOrderId);
     }
 
 }

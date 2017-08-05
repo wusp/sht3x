@@ -20,4 +20,7 @@ public class Const {
     public static final int limit = 300;
 
     public static final int[] mdcCycleMapping = {-1, 2, 3, 1, 4};
+
+    public static final String emptyOrderId = "0";
+    public static final String cardWashOrderId = "-1";
 }

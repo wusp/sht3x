@@ -1,6 +1,7 @@
 
 package com.maxtropy.ilaundry.monitor.service;
 
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.maxtropy.ilaundry.monitor.Const;
@@ -29,6 +30,8 @@ import com.maxtropy.ilaundry.monitor.roc.Roc;
 import com.maxtropy.ilaundry.monitor.serial.SerialCommunicator;
 import com.maxtropy.ilaundry.monitor.serial.SerialResponseListener;
 import com.maxtropy.ilaundry.monitor.serial.model.send.VendPricePacket;
+
+import org.w3c.dom.Text;
 
 import java.util.HashMap;
 
@@ -162,7 +165,7 @@ public class SerialService implements SerialResponseListener {
 
     public void initiateWash(int cycle, int price, String orderId) {
         try {
-            if(orderId != config.getOrderId()) {
+            if(!TextUtils.equals(orderId, config.getOrderId())) {
                 toIdleState();
                 return;
             }
@@ -185,13 +188,13 @@ public class SerialService implements SerialResponseListener {
     }
 
     public void initiateCoinWash() {
-        initiateWash(2, Global.vendPrice, "-1");
+        initiateWash(2, Global.vendPrice, Const.cardWashOrderId);
     }
 
     public void initiateCardWash() {
-        config.saveOrderId("-1");
+        config.saveOrderId(Const.cardWashOrderId);
         roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.card_reader_reserved));
-        initiateWash(2, Global.vendPrice, "-1");
+        initiateWash(2, Global.vendPrice, Const.cardWashOrderId);
     }
 
     public void additionalTime() {
@@ -240,7 +243,7 @@ public class SerialService implements SerialResponseListener {
     public void onError(String reason) {
         if(status == Status.error)
             return;
-        Roc.getInstance().sendMessage(new WasherErrorMessage(reason));
+        Roc.getInstance().sendMessage(new WasherErrorMessage(reason, config.getOrderId()));
         gpio.disableCardReader();
         status = Status.error;
     }
@@ -250,7 +253,7 @@ public class SerialService implements SerialResponseListener {
     }
 
     void toIdleState() {
-        config.saveOrderId("0");
+        config.clearOrderId();
         status = Status.idle;
         gpio.enableCardReader();
         roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.available));
@@ -329,9 +332,12 @@ public class SerialService implements SerialResponseListener {
 
     public void changeReserveState(ReserveRequest request) {
         if(request.getReserveState() == 1) {
-            if(status != Status.idle) {
+            // 如果状态非idle, 记录的orderId等于-1时返回刷卡预约
+            if(status != Status.idle && TextUtils.equals(config.getOrderId(),Const.cardWashOrderId)) {
                 roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.card_reader_reserved));
+                return;
             }
+            // TODO: 对于状态非idle, 且记录的orderid不等于-1时, 是否会有记录的orderid不等于request.orderId的情况? 此时应该如何处理?
             toReserveState(request.getOrderId());
         } else {
             if(status == Status.reserved) {

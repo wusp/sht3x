@@ -15,8 +15,11 @@ public class WasherErrorMessage extends AbstractMessageV2 {
     static final String topic = "ilaundry_device_error";
     @MessageKey(1)
     private String reason;
-    public WasherErrorMessage(String reason) {
+    @MessageKey(2)
+    private String orderId;
+    public WasherErrorMessage(String reason, String orderId) {
         this.reason = reason;
+        this.orderId = orderId;
         setTopic(topic);
     }
 }
