@@ -162,8 +162,10 @@ public class SerialService implements SerialResponseListener {
 
     public void initiateWash(int cycle, int price, String orderId) {
         try {
+            if(orderId != config.getOrderId()) {
+                toIdleState();
+            }
             heartbeatDisabled = true;
-            config.saveOrderId(orderId);
             status = Status.paid;
             lastNotification = 0;
             Global.vendPrice = price;
@@ -247,6 +249,7 @@ public class SerialService implements SerialResponseListener {
     }
 
     void toIdleState() {
+        config.saveOrderId("0");
         status = Status.idle;
         gpio.enableCardReader();
         roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.available));
