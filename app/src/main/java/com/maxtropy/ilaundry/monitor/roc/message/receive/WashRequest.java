@@ -28,4 +28,7 @@ public class WashRequest extends AbstractMessageV2 {
 
     @MessageKey(2)
     private int price;
+
+    @MessageKey(3)
+    private String orderId;
 }

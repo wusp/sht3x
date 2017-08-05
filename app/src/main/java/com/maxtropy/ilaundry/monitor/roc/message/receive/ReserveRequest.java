@@ -26,4 +26,6 @@ public class ReserveRequest extends AbstractMessageV2 {
     @MessageKey(1)
     private int reserveState;
 
+    @MessageKey(2)
+    private String orderId;
 }

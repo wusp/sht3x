@@ -32,7 +32,7 @@ public class WashRequestConsumer implements IMessageConsumer {
                 return;
             }
             Log.d(Const.TAG, "[washRequest] " + response.getMode());
-            SerialService.getInstance().initiateWash(Const.mdcCycleMapping[response.getMode()], response.getPrice());
+            SerialService.getInstance().initiateWash(Const.mdcCycleMapping[response.getMode()], response.getPrice(), response.getOrderId());
         } catch (Exception e) {
             e.printStackTrace();
         }

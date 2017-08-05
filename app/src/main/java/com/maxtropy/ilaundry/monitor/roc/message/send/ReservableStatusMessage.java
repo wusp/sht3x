@@ -1,5 +1,6 @@
 package com.maxtropy.ilaundry.monitor.roc.message.send;
 
+import com.maxtropy.ilaundry.monitor.service.ConfigService;
 import com.maxtropy.mockingbirds.annotation.MessageKey;
 import com.maxtropy.mockingbirds.annotation.MessageType;
 import com.maxtropy.mockingbirds.protocol.AbstractMessageV2;
@@ -28,12 +29,16 @@ public class ReservableStatusMessage extends AbstractMessageV2 {
     }
     @MessageKey(1)
     private int reservable;
+    @MessageKey(2)
+    private String orderId;
     public ReservableStatusMessage(Status status) {
         this.reservable = status.value;
+        this.orderId = ConfigService.getInstance().getOrderId();
         setTopic(topic);
     }
     public ReservableStatusMessage(int reservable) {
         this.reservable = reservable;
+        this.orderId = ConfigService.getInstance().getOrderId();
         setTopic(topic);
     }
 }

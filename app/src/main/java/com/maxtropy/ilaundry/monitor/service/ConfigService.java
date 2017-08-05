@@ -41,4 +41,16 @@ public class ConfigService {
         return tmps;
     }
 
+    public void saveOrderId(String orderId) {
+        editor.putString("orderId", orderId);
+        Log.d(Const.TAG, "[Save Order Id to storage]: " + orderId);
+        editor.commit();
+    }
+
+    public String getOrderId() {
+        String tmps = settings.getString("orderId", null);
+        Log.d(Const.TAG, "[Get OrderId from Storage]: " + tmps);
+        return tmps;
+    }
+
 }

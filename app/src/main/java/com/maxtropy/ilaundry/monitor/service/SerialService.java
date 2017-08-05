@@ -82,6 +82,7 @@ public class SerialService implements SerialResponseListener {
     public static boolean initialized = false;
 
     private GPIOCenter gpio;
+    ConfigService config;
 
     public void initialize() {
         try {
@@ -103,6 +104,7 @@ public class SerialService implements SerialResponseListener {
             gpio = GPIOCenter.getInstance();
             initialized = true;
             status = Status.initialization;
+            config = ConfigService.getInstance();
         } catch(Exception e) {
             e.printStackTrace();
         } finally {
@@ -158,9 +160,10 @@ public class SerialService implements SerialResponseListener {
         }
     }
 
-    public void initiateWash(int cycle, int price) {
+    public void initiateWash(int cycle, int price, String orderId) {
         try {
             heartbeatDisabled = true;
+            config.saveOrderId(orderId);
             status = Status.paid;
             lastNotification = 0;
             Global.vendPrice = price;
@@ -179,12 +182,13 @@ public class SerialService implements SerialResponseListener {
     }
 
     public void initiateCoinWash() {
-        initiateWash(2, Global.vendPrice);
+        initiateWash(2, Global.vendPrice, "-1");
     }
 
     public void initiateCardWash() {
+        config.saveOrderId("-1");
         roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.card_reader_reserved));
-        initiateWash(2, Global.vendPrice);
+        initiateWash(2, Global.vendPrice, "-1");
     }
 
     public void additionalTime() {
@@ -249,8 +253,9 @@ public class SerialService implements SerialResponseListener {
         Log.d(Const.TAG, "[Status] Idle");
     }
 
-    void toReserveState() {
+    void toReserveState(String orderId) {
         status = Status.reserved;
+        config.saveOrderId(orderId);
         gpio.disableCardReader();
         Log.d(Const.TAG, "[Status] Reserved");
     }
@@ -303,6 +308,7 @@ public class SerialService implements SerialResponseListener {
                 roc.sendMessage(new RemainTimeMessage(0));
                 program(2);
             }
+            config.saveOrderId("-1");
             toIdleState();
         }
         int minute = status.getRemainMinute();
@@ -322,7 +328,7 @@ public class SerialService implements SerialResponseListener {
             if(status != Status.idle) {
                 roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.card_reader_reserved));
             }
-            toReserveState();
+            toReserveState(request.getOrderId());
         } else {
             if(status == Status.reserved) {
                 toIdleState();
