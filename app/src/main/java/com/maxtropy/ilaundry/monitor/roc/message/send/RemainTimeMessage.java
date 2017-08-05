@@ -27,7 +27,7 @@ public class RemainTimeMessage extends AbstractMessageV2 {
     @MessageKey(1)
     private int remainingTime;
 
-    @MessageKey(1)
+    @MessageKey(2)
     private String orderId;
 
     public RemainTimeMessage(int remainingTime, String orderId) {
