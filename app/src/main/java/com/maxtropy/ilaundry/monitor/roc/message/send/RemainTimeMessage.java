@@ -27,8 +27,12 @@ public class RemainTimeMessage extends AbstractMessageV2 {
     @MessageKey(1)
     private int remainingTime;
 
-    public RemainTimeMessage(int remainingTime) {
+    @MessageKey(1)
+    private String orderId;
+
+    public RemainTimeMessage(int remainingTime, String orderId) {
         this.remainingTime = remainingTime;
+        this.orderId = orderId;
         setTopic(topic);
     }
 

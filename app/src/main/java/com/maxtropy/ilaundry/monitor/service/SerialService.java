@@ -312,10 +312,9 @@ public class SerialService implements SerialResponseListener {
         if((status.isMode(1) || status.isMode(5)) && (this.status == Status.initialization || this.status == Status.started || this.status == Status.error)) {
             // Job finished. Report availability.
             if(this.status == Status.started) {
-                roc.sendMessage(new RemainTimeMessage(0));
+                roc.sendMessage(new RemainTimeMessage(0, config.getOrderId()));
                 program(2);
             }
-            config.saveOrderId("-1");
             toIdleState();
         }
         int minute = status.getRemainMinute();
@@ -325,7 +324,7 @@ public class SerialService implements SerialResponseListener {
             }
             if(Math.abs(lastNotification - minute) >= 2) {
                 lastNotification = minute;
-                roc.sendMessage(new RemainTimeMessage(minute));
+                roc.sendMessage(new RemainTimeMessage(minute, config.getOrderId()));
             }
         }
     }
