@@ -253,10 +253,11 @@ public class SerialService implements SerialResponseListener {
     }
 
     void toIdleState() {
-        config.clearOrderId();
         status = Status.idle;
         gpio.enableCardReader();
         roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.available));
+        // 在发出消息后才清除本地缓存的OrderId. 用于防止盒子断电前洗衣机在工作, 上电后洗衣机已完成时无法正确上报带OrderId的空闲状态.
+        config.clearOrderId();
         Log.d(Const.TAG, "[Status] Idle");
     }
 
