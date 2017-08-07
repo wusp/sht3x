@@ -67,11 +67,12 @@ public class SerialService implements SerialResponseListener {
         reserved(2),
         paid(3),
         started(4),
-        done(5),
+        done(5),  // deprecated
         error(6);    // before notification
         int value;
         private Status(int value) {
             this.value = value;
+
         }
     }
 
@@ -108,10 +109,24 @@ public class SerialService implements SerialResponseListener {
             initialized = true;
             status = Status.initialization;
             config = ConfigService.getInstance();
+            doRecover();
         } catch(Exception e) {
             e.printStackTrace();
         } finally {
             serial.unlock();
+        }
+    }
+
+    /**
+     * 从断电状态中恢复。
+     */
+    public void doRecover() {
+        String orderId = config.getOrderId();
+        Status prevStatus = config.getSerialStatus();
+        if(!orderId.equals(Const.emptyOrderId) && prevStatus == Status.paid) {
+            // 只需保持状态。微信和洗衣机都会在等待用户按start的状态
+            cardInReader = true;
+            this.status = prevStatus;
         }
     }
 
@@ -132,6 +147,10 @@ public class SerialService implements SerialResponseListener {
     public MachineStatusPacket getMachineStatus() {
         try {
             serial.lock();
+            if(heartbeatDisabled) {
+                serial.unlock();
+                return null;
+            }
             serial.sendPacket(new StatusRequestPacket(cardInReader), Thread.currentThread(), MachineStatusPacket.code);
             serial.sendPacket(new VendPricePacket(), Thread.currentThread());
             serial.unlock();
@@ -170,7 +189,9 @@ public class SerialService implements SerialResponseListener {
                 return;
             }
             heartbeatDisabled = true;
-            status = Status.paid;
+            changeStatus(Status.paid);
+            config.saveCycle(cycle);
+            config.savePrice(price);
             lastNotification = 0;
             Global.vendPrice = price;
             gpio.disableCardReader();
@@ -252,8 +273,13 @@ public class SerialService implements SerialResponseListener {
         return serial.isReady();
     }
 
+    void changeStatus(Status status) {
+        this.status = status;
+        config.setSerialStatus(status);
+    }
+
     void toIdleState() {
-        status = Status.idle;
+        changeStatus(Status.idle);
         gpio.enableCardReader();
         roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.available));
         // 在发出消息后才清除本地缓存的OrderId. 用于防止盒子断电前洗衣机在工作, 上电后洗衣机已完成时无法正确上报带OrderId的空闲状态.
@@ -262,7 +288,7 @@ public class SerialService implements SerialResponseListener {
     }
 
     void toReserveState(String orderId) {
-        status = Status.reserved;
+        changeStatus(Status.reserved);
         config.saveOrderId(orderId);
         gpio.disableCardReader();
         Log.d(Const.TAG, "[Status] Reserved");
@@ -271,7 +297,7 @@ public class SerialService implements SerialResponseListener {
     void toStartedState() {
         roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.machine_running));
         gpio.disableCardReader();
-        this.status = Status.started;
+        changeStatus(Status.started);
         Log.d(Const.TAG, "[Status] Started");
     }
 

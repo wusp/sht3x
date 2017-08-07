@@ -57,4 +57,29 @@ public class ConfigService {
         saveOrderId(Const.emptyOrderId);
     }
 
+    public SerialService.Status getSerialStatus() {
+        int tmp = settings.getInt("serialStatus", SerialService.Status.initialization.value);
+        Log.v(Const.TAG, "[Get status from Storage]: " + tmp);
+        return SerialService.Status.values()[tmp];
+    }
+
+    public void setSerialStatus(SerialService.Status status) {
+        editor.putInt("serialStatus", status.value);
+        Log.v(Const.TAG, "[Save status from Storage]: " + status.value);
+    }
+    public void saveCycle(int cycle) {
+        editor.putInt("cycle", cycle);
+    }
+
+    public void savePrice(int price) {
+        editor.putInt("price", price);
+    }
+
+    public int getCycle() {
+        return settings.getInt("cycle", 2);
+    }
+
+    public int getPrice() {
+        return settings.getInt("price", 1);
+    }
 }
