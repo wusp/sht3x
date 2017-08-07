@@ -66,13 +66,16 @@ public class ConfigService {
     public void setSerialStatus(SerialService.Status status) {
         editor.putInt("serialStatus", status.value);
         Log.v(Const.TAG, "[Save status from Storage]: " + status.value);
+        editor.commit();
     }
     public void saveCycle(int cycle) {
         editor.putInt("cycle", cycle);
+        editor.commit();
     }
 
     public void savePrice(int price) {
         editor.putInt("price", price);
+        editor.commit();
     }
 
     public int getCycle() {

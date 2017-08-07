@@ -400,8 +400,10 @@ public class SerialCommunicator {
     void onTimeOut() {
         // TODO no resend mechanism enforced
         // restart();
-        if(++nakCount == 8)
+        if(++nakCount == 8){
             onError("Timeout 8 times.");
+            wakeThread();
+        }
         else
             sendControl(NAK);
     }

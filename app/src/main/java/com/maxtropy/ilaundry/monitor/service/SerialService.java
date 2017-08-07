@@ -123,10 +123,12 @@ public class SerialService implements SerialResponseListener {
     public void doRecover() {
         String orderId = config.getOrderId();
         Status prevStatus = config.getSerialStatus();
+        Log.e(Const.TAG, "doRecover orderId:" + orderId + " status:" + prevStatus);
         if(!orderId.equals(Const.emptyOrderId) && prevStatus == Status.paid) {
             // 只需保持状态。微信和洗衣机都会在等待用户按start的状态
             cardInReader = true;
             this.status = prevStatus;
+            initiateWash(config.getCycle(), config.getPrice(), config.getOrderId());
         }
     }
 
