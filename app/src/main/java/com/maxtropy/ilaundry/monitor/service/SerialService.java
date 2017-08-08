@@ -1,6 +1,7 @@
 
 package com.maxtropy.ilaundry.monitor.service;
 
+import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -51,11 +52,15 @@ public class SerialService implements SerialResponseListener {
 
     Roc roc;
 
+    private Handler mHandler = null;
+    private Runnable timerRunnerable = null;
+
     private SerialService() {
         serial = SerialCommunicator.getInstance();
         serial.openPort();
         serial.setResponseListener(this);
         roc = Roc.getInstance();
+        mHandler = new Handler();
     }
 
     boolean programming = false;
@@ -190,6 +195,7 @@ public class SerialService implements SerialResponseListener {
                 toIdleState();
                 return;
             }
+            cancleReserveTimer();
             heartbeatDisabled = true;
             changeStatus(Status.paid);
             config.saveCycle(cycle);
@@ -269,6 +275,7 @@ public class SerialService implements SerialResponseListener {
         Roc.getInstance().sendMessage(new WasherErrorMessage(reason, config.getOrderId()));
         gpio.disableCardReader();
         status = Status.error;
+        cancleReserveTimer();
     }
 
     public boolean isReady() {
@@ -286,6 +293,7 @@ public class SerialService implements SerialResponseListener {
         roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.available));
         // 在发出消息后才清除本地缓存的OrderId. 用于防止盒子断电前洗衣机在工作, 上电后洗衣机已完成时无法正确上报带OrderId的空闲状态.
         config.clearOrderId();
+        cancleReserveTimer();
         Log.d(Const.TAG, "[Status] Idle");
     }
 
@@ -293,6 +301,7 @@ public class SerialService implements SerialResponseListener {
         changeStatus(Status.reserved);
         config.saveOrderId(orderId);
         gpio.disableCardReader();
+        startReserveTimer();
         Log.d(Const.TAG, "[Status] Reserved");
     }
 
@@ -300,6 +309,7 @@ public class SerialService implements SerialResponseListener {
         roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.machine_running));
         gpio.disableCardReader();
         changeStatus(Status.started);
+        cancleReserveTimer();
         Log.d(Const.TAG, "[Status] Started");
     }
 
@@ -371,6 +381,27 @@ public class SerialService implements SerialResponseListener {
             if(status == Status.reserved) {
                 toIdleState();
             }
+        }
+    }
+
+    public void startReserveTimer(){
+        if(mHandler!=null){
+            if(timerRunnerable !=null){
+                cancleReserveTimer();
+            }
+            timerRunnerable = new Runnable() {
+                @Override
+                public void run() {
+                    toIdleState();
+                }
+            };
+            mHandler.postDelayed(timerRunnerable, Const.reserverTime);
+        }
+    }
+    public void cancleReserveTimer(){
+        if(mHandler != null && timerRunnerable != null){
+            mHandler.removeCallbacks(timerRunnerable);
+            timerRunnerable = null;
         }
     }
 }

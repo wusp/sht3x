@@ -23,4 +23,6 @@ public class Const {
 
     public static final String emptyOrderId = "0";
     public static final String cardWashOrderId = "-1";
+
+    public static final int reserverTime = 5 * 60 * 1000;
 }
