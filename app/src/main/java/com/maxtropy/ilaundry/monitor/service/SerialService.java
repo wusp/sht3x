@@ -404,4 +404,24 @@ public class SerialService implements SerialResponseListener {
             timerRunnerable = null;
         }
     }
+
+    public void reportReserveStatus(){
+        ReservableStatusMessage.Status reserveStatus;
+        // TODO: revisit when try to handle card reader status
+        switch(this.status){
+            case Status.idle: reserveStatus = ReservableStatusMessage.Status.available; break;
+            case Status.reserved: reserveStatus = ReservableStatusMessage.Status.reserved_deprecated; break;
+            case Status.paid: reserveStatus = ReservableStatusMessage.Status.in_use; break;
+            case Status.started: reserveStatus = ReservableStatusMessage.Status.machine_running; break;
+            case Status.done: reserveStatus = ReservableStatusMessage.Status.available; break;
+            case Status.error: reserveStatus = ReservableStatusMessage.Status.error; break;
+            case Status.initialization: // won't report when in initialization status.
+            default: reserveStatus = null;
+        }
+        Log.i(Const.TAG, "[reportReserveStatus] current status:" + this.status + " reserver status:" + reserveStatus);
+        if(reserveStatus != null){
+            roc.sendMessage(new ReservableStatusMessage(reserveStatus));
+        }
+    }
+
 }
