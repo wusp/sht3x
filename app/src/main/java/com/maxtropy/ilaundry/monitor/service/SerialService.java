@@ -91,7 +91,7 @@ public class SerialService implements SerialResponseListener {
     public static boolean initialized = false;
 
     private GPIOCenter gpio;
-    ConfigService config;
+    ConfigService config = ConfigService.getInstance();;
 
     public void initialize() {
         try {
@@ -113,7 +113,6 @@ public class SerialService implements SerialResponseListener {
             gpio = GPIOCenter.getInstance();
             initialized = true;
             status = Status.initialization;
-            config = ConfigService.getInstance();
             doRecover();
         } catch(Exception e) {
             e.printStackTrace();
