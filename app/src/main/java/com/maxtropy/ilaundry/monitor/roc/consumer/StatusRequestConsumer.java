@@ -40,6 +40,6 @@ public class StatusRequestConsumer implements IMessageConsumer {
 
     @Override
     public Integer consumeType() {
-        return WashRequest.SUB_TYPE;
+        return StatusRequest.SUB_TYPE;
     }
 }
