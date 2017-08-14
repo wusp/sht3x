@@ -17,10 +17,7 @@ import com.maxtropy.roc.model.MessageData;
 
 public class StatusRequestConsumer implements IMessageConsumer {
 
-    Roc roc;
-
-    public StatusRequestConsumer(Roc roc) {
-        this.roc = roc;
+    public StatusRequestConsumer() {
     }
 
     @Override
