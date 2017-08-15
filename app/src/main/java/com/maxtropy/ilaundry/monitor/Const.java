@@ -19,7 +19,9 @@ public class Const {
     public static final int threshold = 190;
     public static final int limit = 300;
 
-    public static final int[] mdcCycleMapping = {-1, 2, 3, 1, 4};
+    public static final int[] mdcCycleMapping = {-1, // 异常cycle
+            2, 3, 1, 4,      // 洗衣机模式 normal/perm press/heavy/delicate
+            10, 30, 40, 50}; // 烘干机时长 10/30/40/50 min
 
     public static final String emptyOrderId = "0";
     public static final String cardWashOrderId = "-1";
