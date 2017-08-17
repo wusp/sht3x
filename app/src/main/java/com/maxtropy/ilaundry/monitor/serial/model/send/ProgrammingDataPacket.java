@@ -58,7 +58,7 @@ public class ProgrammingDataPacket extends SerialPacket {
                         putShort(3, 25);    // Coin 1
                         putShort(5, 100);   // Coin 2
                         putShort(7, 100);    // Start pulse
-                        putByte(9, 3);     // cycle configuration
+                        putByte(9, Const.mdcCycleToConfigurationMapping[cycle]);     // cycle -> cycle configuration
                         putByte(10, 12);     // control configuration
                         putByte(11, cycle);    // default cycle
                         break;
@@ -73,12 +73,12 @@ public class ProgrammingDataPacket extends SerialPacket {
                         putByte(10, 3);     // cool down time
                         putByte(11, 15);    // coin 1 topoff
                         putByte(12, 60);    // coin 2 topoff
-                        putByte(13, 0);     // h temp
-                        putByte(14, 3);     // m temp
-                        putByte(15, 9);     // l temp
-                        putByte(16, 12);    // delicate temp
+                        putByte(13, 0);     // h temp        71℃ 160℉
+                        putByte(14, 1);     // m temp        68℃ 155℉
+                        putByte(15, 3);     // l temp        62℃ 145℉
+                        putByte(16, 9);    // delicate temp  46℃ 115℉
                         putByte(17, 12);    // control conf
-                        putByte(18, 3); // default cycle: 1=High Temperature 2=Medium Temperature 3=Low Temperature 4=Delicate
+                        putByte(18, 2); // default cycle: 1=High Temperature 2=Medium Temperature 3=Low Temperature 4=Delicate
                         break;
                     case Tumbler:
                         data = new byte[43];
@@ -91,12 +91,12 @@ public class ProgrammingDataPacket extends SerialPacket {
                         putByte(10, 1);     // cool down time
                         putByte(11, 10);    // coin 1 topoff
                         putByte(12, 40);    // coin 2 topoff
-                        putByte(13, 6);     // h temp
-                        putByte(14, 9);     // m temp
-                        putByte(15, 15);     // l temp
-                        putByte(16, 18);    // delicate temp
+                        putByte(13, 6);     // h temp         71℃ 160℉
+                        putByte(14, 7);     // m temp         68℃ 155℉
+                        putByte(15, 9);     // l temp         62℃ 145℉
+                        putByte(16, 15);    // delicate temp  46℃ 115℉
                         putByte(17, 12);    // control conf
-                        putByte(18, 3); // default cycle: 1 Heavy, 2: Normal, 3: Perm Press, 4: Delicate
+                        putByte(18, 2); // default cycle: 1 Heavy, 2: Normal, 3: Perm Press, 4: Delicate
                         break;
                     default:
                         Log.e(Const.TAG, "Programming packet for this type of machine not implemented");
