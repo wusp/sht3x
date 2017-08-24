@@ -210,8 +210,8 @@ public class SerialCommunicator {
      * 预设发送数据包函数：会发送最近发送的一个数据包。用于初次发送或者失败重新发送
      */
     private void sendPacket() {
-        if(retryTimes == 3) {
-            onError("Retried 3 times.");
+        if(retryTimes == 7) {
+            onError("Retried 7 times.");
             return;
         }
         retryTimes ++;
@@ -404,8 +404,11 @@ public class SerialCommunicator {
             onError("Timeout 8 times.");
             wakeThread();
         }
-        else
-            sendControl(NAK);
+        else{
+        // Try use resend packet instead of sending NAK when packet timeout occurs
+            sendPacket();
+//            sendControl(NAK);
+        }
     }
 
     String bufferToStr(byte[] buf) {
