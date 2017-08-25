@@ -156,6 +156,7 @@ public class SerialService implements SerialResponseListener {
                 serial.unlock();
                 return null;
             }
+            machineStatus = null;
             serial.sendPacket(new StatusRequestPacket(cardInReader), Thread.currentThread(), MachineStatusPacket.code);
             serial.sendPacket(new VendPricePacket(), Thread.currentThread());
             serial.unlock();
