@@ -243,6 +243,8 @@ public class SerialCommunicator {
         this.waitResponseCode = waitResponseCode;
         currentServingThread = callingThread;
         lastReq = req;
+        retryTimes = 0;
+        nakCount = 0;
         sendPacket();
         synchronized (callingThread) {
             try {
@@ -402,6 +404,7 @@ public class SerialCommunicator {
         // restart();
         if(++nakCount == 7){
             onError("Timeout 7 times.");
+            nakCount = 0;
             wakeThread();
         }
         else{
