@@ -190,7 +190,14 @@ public class SerialService implements SerialResponseListener {
 
     public void initiateWash(int cycle, int price, String orderId) {
         try {
-            if(!TextUtils.equals(orderId, config.getOrderId())) {
+            // 只要当前状态是空闲, 或者预约/使用中且orderId相同, 则收到启动洗衣就开始洗
+            if(this.status == Status.idle){
+                // 空闲状态下记录orderId
+                config.saveOrderId(orderId);
+            } else if((this.status == Status.reserved || this.status == Status.paid)&& TextUtils.equals(orderId, config.getOrderId())){
+                // Do nothing
+            } else {
+//            if(!TextUtils.equals(orderId, config.getOrderId())) {
                 toIdleState();
                 return;
             }
@@ -375,7 +382,12 @@ public class SerialService implements SerialResponseListener {
                 return;
             }
             // TODO: 对于状态非idle, 且记录的orderid不等于-1时, 是否会有记录的orderid不等于request.orderId的情况? 此时应该如何处理?
-            toReserveState(request.getOrderId());
+            // 先收到洗衣请求再收到预约请求(消息乱序的情况)下记录的orderid等于request.orderId, 但此时不应该再变更状态了
+            // 简单来说规则变为只有在空闲状态下且记录的id不等于请求的id时才可以变为预约
+            // TODO: 由于消息触发的事件可能在多个线程里?待确认, 可能需要对获取和变更状态加锁
+            if(this.status == Status.idle && !TextUtils.equals(request.getOrderId(), config.getOrderId())){
+                toReserveState(request.getOrderId());
+            }
         } else {
             if(status == Status.reserved) {
                 toIdleState();
