@@ -36,6 +36,8 @@ import org.w3c.dom.Text;
 
 import java.util.HashMap;
 
+import static com.maxtropy.ilaundry.monitor.Const.mdcFuncToCycleMapping;
+
 /**
  * Created by Gerald on 6/3/2017.
  */
@@ -229,7 +231,8 @@ public class SerialService implements SerialResponseListener {
     public void initiateCardWash() {
         config.saveOrderId(Const.cardWashOrderId);
         roc.sendMessage(new ReservableStatusMessage(ReservableStatusMessage.Status.card_reader_reserved));
-        initiateWash(2, Global.vendPrice, Const.cardWashOrderId);
+        initiateWash( (Global.machineType == Global.MachineType.TopLoadWasher || Global.machineType == Global.MachineType.FrontLoadWasher ) ? mdcFuncToCycleMapping[1] : mdcFuncToCycleMapping[7]
+                , Global.vendPrice, Const.cardWashOrderId);
     }
 
     public void additionalTime() {
