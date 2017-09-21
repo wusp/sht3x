@@ -13,10 +13,21 @@ public class VendPricePacket extends SerialPacket {
 
     public VendPricePacket() {
         tag = "vend price";
-        data = new byte[4];
-        data[0] = getCode();
-        putShort(1, Global.vendPrice);
-        data[3] = 0;
+        switch (Global.systemType) {
+            case MDC:
+                data = new byte[4];
+                data[0] = getCode();
+                putShort(1, Global.vendPrice);
+                data[3] = 0;
+                break;
+            default:
+                data = new byte[7];
+                data[0] = getCode();
+                putShort(1, Global.vendPrice);
+                putShort(3, 0);
+                data[5] = 0;
+                data[6] = 0;
+        }
     }
 
     public byte getCode() {

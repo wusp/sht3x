@@ -20,12 +20,21 @@ public class CardInsertedTopOffPacket extends SerialPacket {
 
     void initalization(int cardBalance, int vendPrice) {
         tag = this.getClass().getName();
-        data = new byte[6];
-        data[0] = code;
-        data[1] = (byte)(cardBalance / 0x100);
-        data[2] = (byte)(cardBalance % 0x100);
-        data[3] = (byte)(vendPrice / 0x100);
-        data[4] = (byte)(vendPrice % 0x100);
-        data[5] = Global.TOP_OFF_TIME;
+        switch (Global.systemType) {
+            case MDC:
+                data = new byte[6];
+                data[0] = code;
+                data[1] = (byte)(cardBalance / 0x100);
+                data[2] = (byte)(cardBalance % 0x100);
+                data[3] = (byte)(vendPrice / 0x100);
+                data[4] = (byte)(vendPrice % 0x100);
+                data[5] = Global.TOP_OFF_TIME;
+                break;
+            default:
+                data = new byte[6];
+                data[0] = code;
+                data[1] = (byte)(cardBalance / 0x100);
+                data[2] = (byte)(cardBalance % 0x100);
+        }
     }
 }
