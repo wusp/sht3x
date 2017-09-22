@@ -6,6 +6,8 @@ import com.maxtropy.ilaundry.monitor.serial.model.SerialPacket;
 import static com.maxtropy.ilaundry.monitor.Global.SystemType.MDC;
 
 /**
+ * Should be used on CR driven vend only.
+ *
  * Created by Gerald on 6/3/2017.
  */
 

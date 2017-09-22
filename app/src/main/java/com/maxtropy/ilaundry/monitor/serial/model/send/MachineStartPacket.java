@@ -1,9 +1,10 @@
 package com.maxtropy.ilaundry.monitor.serial.model.send;
 
-import com.maxtropy.ilaundry.monitor.Global;
 import com.maxtropy.ilaundry.monitor.serial.model.SerialPacket;
 
 /**
+ * Must be received by FEC within 10s after it's sent the Deduct Vend Command.
+ *
  * Created by Gerald on 6/3/2017.
  * 3.6.9
  */

@@ -3,6 +3,7 @@ package com.maxtropy.ilaundry.monitor.serial.model.send;
 import com.maxtropy.ilaundry.monitor.serial.model.SerialPacket;
 
 /**
+ * General Card Removed Packet, not report remain balance
  * Created by Gerald on 6/3/2017.
  * 3.6.9
  */

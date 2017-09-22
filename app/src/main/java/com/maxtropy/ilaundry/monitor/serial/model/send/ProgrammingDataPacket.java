@@ -35,6 +35,8 @@ public class ProgrammingDataPacket extends SerialPacket {
 
     public ProgrammingDataPacket(int cycle, int length) {
         tag = this.getClass().getName();
+        Log.d(Const.TAG, "[Initialize Programming Data Packet] machine:" + Global.machineType
+            + " system:" + Global.systemType);
         // 不想创很多类，这样是最简单的方法了
         // 虽然可维护性会不是很好
         switch(Global.systemType) {
@@ -254,6 +256,7 @@ public class ProgrammingDataPacket extends SerialPacket {
                     default:
                         Log.e(Const.TAG, "Programming packet for this type of machine not implemented");
                 }
+                break;
             default:
                 Log.e(Const.TAG, "Programming packet for this type of machine not implemented");
         }

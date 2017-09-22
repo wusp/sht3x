@@ -3,6 +3,8 @@ package com.maxtropy.ilaundry.monitor.serial.model.send;
 import com.maxtropy.ilaundry.monitor.serial.model.SerialPacket;
 
 /**
+ * Not such Packet on Quantum
+ *
  * Created by Gerald on 6/3/2017.
  */
 

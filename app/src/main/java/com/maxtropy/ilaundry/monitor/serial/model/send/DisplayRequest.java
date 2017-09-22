@@ -9,7 +9,7 @@ import com.maxtropy.ilaundry.monitor.serial.model.SerialPacket;
 public class DisplayRequest extends SerialPacket {
     public final static byte code = 0x60;
 
-    public DisplayRequest(int d0, int d1, int d2, int d3) {
+    public DisplayRequest(int d0, int d1, int d2, int d3, int duration) {
         tag = this.getClass().getName();
         data = new byte[6];
         data[0] = code;
@@ -17,6 +17,6 @@ public class DisplayRequest extends SerialPacket {
         data[2] = (byte)d1;
         data[3] = (byte)d2;
         data[4] = (byte)d3;
-        data[5] = 5;
+        data[5] = (byte) duration;  //Duration of display in seconds.
     }
 }

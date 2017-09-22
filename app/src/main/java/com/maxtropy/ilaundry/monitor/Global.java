@@ -1,9 +1,6 @@
 package com.maxtropy.ilaundry.monitor;
 
-import android.graphics.Bitmap;
-
 import com.maxtropy.ilaundry.monitor.roc.message.receive.MachineTypeResponse;
-import com.maxtropy.ilaundry.monitor.serial.SerialCommunicator;
 import com.maxtropy.ilaundry.monitor.service.ConfigService;
 
 import org.json.JSONObject;
@@ -73,5 +70,4 @@ public class Global {
             System.exit(1);
         }
     }
-
 }
