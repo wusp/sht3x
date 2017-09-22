@@ -8,14 +8,17 @@ import android.util.Log;
 import com.maxtropy.ilaundry.monitor.Const;
 import com.maxtropy.ilaundry.monitor.Global;
 import com.maxtropy.ilaundry.monitor.gpio.GPIOCenter;
+import com.maxtropy.ilaundry.monitor.roc.Roc;
 import com.maxtropy.ilaundry.monitor.roc.message.receive.ReserveRequest;
 import com.maxtropy.ilaundry.monitor.roc.message.send.RemainTimeMessage;
 import com.maxtropy.ilaundry.monitor.roc.message.send.ReservableStatusMessage;
 import com.maxtropy.ilaundry.monitor.roc.message.send.WasherErrorMessage;
+import com.maxtropy.ilaundry.monitor.serial.SerialCommunicator;
+import com.maxtropy.ilaundry.monitor.serial.SerialResponseListener;
 import com.maxtropy.ilaundry.monitor.serial.builder.machine_status.MachineStatusBuilder;
+import com.maxtropy.ilaundry.monitor.serial.model.SerialPacket;
 import com.maxtropy.ilaundry.monitor.serial.model.receive.MachineControlInitializationPacket;
 import com.maxtropy.ilaundry.monitor.serial.model.receive.MachineStatusPacket;
-import com.maxtropy.ilaundry.monitor.serial.model.SerialPacket;
 import com.maxtropy.ilaundry.monitor.serial.model.send.AddTimePacket;
 import com.maxtropy.ilaundry.monitor.serial.model.send.AudioBeepRequest;
 import com.maxtropy.ilaundry.monitor.serial.model.send.CardInitializationPacket;
@@ -25,16 +28,9 @@ import com.maxtropy.ilaundry.monitor.serial.model.send.CardRemovedPacket;
 import com.maxtropy.ilaundry.monitor.serial.model.send.CashCardRemovedPacket;
 import com.maxtropy.ilaundry.monitor.serial.model.send.DisplayRequest;
 import com.maxtropy.ilaundry.monitor.serial.model.send.MachineStartPacket;
-import com.maxtropy.ilaundry.monitor.serial.model.send.StatusRequestPacket;
 import com.maxtropy.ilaundry.monitor.serial.model.send.ProgrammingDataPacket;
-import com.maxtropy.ilaundry.monitor.roc.Roc;
-import com.maxtropy.ilaundry.monitor.serial.SerialCommunicator;
-import com.maxtropy.ilaundry.monitor.serial.SerialResponseListener;
+import com.maxtropy.ilaundry.monitor.serial.model.send.StatusRequestPacket;
 import com.maxtropy.ilaundry.monitor.serial.model.send.VendPricePacket;
-
-import org.w3c.dom.Text;
-
-import java.util.HashMap;
 
 import static com.maxtropy.ilaundry.monitor.Const.mdcFuncToCycleMapping;
 
@@ -92,10 +88,11 @@ public class SerialService implements SerialResponseListener {
 
     public static boolean initialized = false;
 
-    private GPIOCenter gpio = GPIOCenter.getInstance();;
-    ConfigService config = ConfigService.getInstance();;
+    private GPIOCenter gpio = GPIOCenter.getInstance();
+    ConfigService config = ConfigService.getInstance();
 
     public void initialize() {
+        Log.d(Const.TAG, "initialization, systemType: " + Global.systemType);
         try {
             serial.lock();
             switch(Global.systemType) {
@@ -148,7 +145,7 @@ public class SerialService implements SerialResponseListener {
     int[] ledDigits = {126, 12, 182, 158, 204, 218, 250, 14, 254, 222};
 
     public void showErrorCode(int code) {
-        sendSingleRequest(new DisplayRequest(242, 114, ledDigits[code / 10 % 10], ledDigits[code % 10]));
+        sendSingleRequest(new DisplayRequest(242, 114, ledDigits[code / 10 % 10], ledDigits[code % 10], 5));
     }
 
     public MachineStatusPacket getMachineStatus() {
@@ -180,7 +177,6 @@ public class SerialService implements SerialResponseListener {
             removeCard();
             serial.sendPacket(new CardRemovedPacket(), Thread.currentThread());
             Thread.sleep(200);
-
             serial.sendPacket(new StatusRequestPacket(cardInReader), Thread.currentThread(), MachineStatusPacket.code);
             serial.sendPacket(new VendPricePacket(), Thread.currentThread());
         } catch(Exception e) {
@@ -199,8 +195,7 @@ public class SerialService implements SerialResponseListener {
             } else if((this.status == Status.reserved || this.status == Status.paid)&& TextUtils.equals(orderId, config.getOrderId())){
                 // Do nothing
             } else {
-//            if(!TextUtils.equals(orderId, config.getOrderId())) {
-                toIdleState();
+                Log.d(Const.TAG, "Init Wash on Invalid status: " + status.value);
                 return;
             }
             cancleReserveTimer();
@@ -349,7 +344,6 @@ public class SerialService implements SerialResponseListener {
                 sendSingleRequest(new CashCardRemovedPacket());
                 break;
         }
-
 
         String tmp = "Status: ";
         for(int i = 0; i < 8; ++i)
