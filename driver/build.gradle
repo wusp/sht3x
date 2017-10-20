@@ -45,7 +45,7 @@ publish {
     userOrg = 'wusp'
     groupId = 'com.wusp.androidthings'
     artifactId = 'sht3x'
-    publishVersion = '0.0.1-alpha'
+    publishVersion = '0.0.2'
     desc = 'Android Things driver for Sensirion SHT30/STH31/SHT35.'
     website = 'https://github.com/wusp/sht3x'
 }
