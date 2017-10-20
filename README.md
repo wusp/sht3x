@@ -5,9 +5,6 @@ Android Things driver for Sensirion [STH3x][sht3x] series humidity and temperatu
 
 NOTE: these drivers are not production-ready. They are offered as sample implementations of Android Things user space drivers for common peripherals as part of the Developer Preview release. There is no guarantee of correctness, completeness or robustness.
 
-How to use the driver
----------------------
-
 ## Gradle dependency
 To use the this driver, simply add the line below to your module's `build.gradle`.
 
@@ -100,8 +97,7 @@ and `convertToHumidity(byteArrayOf(Humidity MSB, Humidity LSB))` to convert resp
         }
 ```
 
-License
--------
+## License
 
 Licensed to the Apache Software Foundation (ASF) under one or more contributor
 license agreements.  See the NOTICE file distributed with this work for
