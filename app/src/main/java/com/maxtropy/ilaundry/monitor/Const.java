@@ -21,9 +21,16 @@ public class Const {
 
     public static final int[] mdcFuncToCycleMapping = {             // 洗衣/烘干程序(1-8) -> MDC cycle
             -1,              // 异常cycle
-            2, 3, 1, 4,      // 洗衣机模式 1 - normal/ 2 - perm press / 3 - heavy / 4 - delicate
+            2, 3, 1, 4,      // 服务器下发内容 1 - normal / 2 - perm press / 3 - heavy / 4 - delicate
             10, 30, 40, 50   // 烘干机时长 5 - 10 / 6 - 30 / 7 - 40 / 8 - 50 min
-            };
+    };
+
+    public static final int[] centurionDefaultCycleToServerCycleMapping = {
+            -1,             // 异常cycle
+            3, 3, 6, 9,    // 洗衣机模式 3 - normal & cold & enable heavy (according to heavy cycle)/ 3 - normal & cold / 6 - normal & cold / 9 - delicate & cold
+            10, 30, 40, 50  //烘干机时长，通过编程调整烘干机时间
+    };
+
 
     public static final int[] mdcCycleToConfigurationMapping = {   // MDC cycle(2314) -> Frontload Cycle configuration
             -1,              // 异常cycle
@@ -36,5 +43,5 @@ public class Const {
     public static final String emptyOrderId = "0";
     public static final String cardWashOrderId = "-1";
 
-    public static final int reserverTime = 5 * 60 * 1000;
+    public static final int reserverTime = 3 * 60 * 1000;
 }
