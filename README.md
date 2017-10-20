@@ -1,5 +1,4 @@
 # SHT3x driver for Android Things
-================================
 
 Android Things driver for Sensirion [STH3x][sht3x] series humidity and temperature sensor
 
